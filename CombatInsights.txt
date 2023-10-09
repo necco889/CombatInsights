@@ -1,0 +1,31 @@
+## Title: CombatInsights
+## APIVersion: 101039
+## Description: CombatInsights
+## Version: 1.0.2
+## AddOnVersion: 10002
+## Author: necco889
+## SavedVariables: CombatInsightsSavedVariables
+## DependsOn: CombatMetrics>=10515 CombatMetricsFightData>=13 LibAddonMenu-2.0 LibCombat>=54 LibAsync>=20304 CombatInsightsFightData
+## OptionalDependsOn: LibDebugLogger
+
+; This Add-on is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. 
+; The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries.
+; All rights reserved.
+; 
+; You can read the full terms at https://account.elderscrollsonline.com/add-on-terms
+
+src/consts.lua
+src/utils.lua
+src/calculationcfg.lua
+src/calculation.lua
+src/uptimecounter.lua
+src/fights.lua
+src/targets.lua
+src/player.lua
+src/hit.lua
+src/cmptbl.lua
+src/reportui.lua
+src/analysis.lua
+;src/sandbox.lua
+CombatInsights.xml
+CombatInsights.lua
