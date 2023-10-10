@@ -198,7 +198,7 @@ function Hit:ReCalcDmgDone()
                 val = val + 30
             end
         end
-        if self.player.hasNecroSiphonSlotted[self.player.stats.activeBar] then
+        if self.player.stats.hasNecroSiphonSlotted[self.player.stats.activeBar] then
             val = val + 3
         end
     
