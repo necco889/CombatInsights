@@ -114,6 +114,14 @@ function Targets:HandleDebuffEvent(analysis, logline, trialDummy)
         if sourceType == COMBAT_UNIT_TYPE_PLAYER then
             t.abyssalInk = isGain(changeType)
         end
+    elseif abilityName == GetAbilityName(Consts.debuffs.incap) then
+        if sourceType == COMBAT_UNIT_TYPE_PLAYER then
+            t.incap = isGain(changeType)
+        end
+    elseif abilityName == GetAbilityName(Consts.debuffs.soulharvest) then
+        if sourceType == COMBAT_UNIT_TYPE_PLAYER then
+            t.soulharvest = isGain(changeType)
+        end
     elseif abilityName == GetAbilityName(Consts.debuffs.zen) then
         t.zen = isGain(changeType)
         t.zenStacks = 5 --TODO probably this will be complicated

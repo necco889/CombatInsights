@@ -173,7 +173,7 @@ function Hit:ReCalcDmgDone()
             val = val + 33
         elseif self.abilityId == 20805 then
             -- molten whip stacks
-            val = val + player.buffs.seethingFuryWhipStacks and player.buffs.seethingFuryWhipStacks * 20 or 0
+            val = val + (player.buffs.seethingFuryWhipStacks and player.buffs.seethingFuryWhipStacks * 20 or 0)
         --venomous claw every tick does +12% dmg but this a unique bonus not effected by anything
         end
 
@@ -292,7 +292,7 @@ function Hit:ReCalcDmgTaken()
             val = val + 45
         end
     elseif self.player.classId == Consts.CLASS_ID_NB then
-        if self.target.incap and Consts.soulharvest[self.abilityId] then
+        if self.target.incap or self.target.soulharvest then
             val = val + 20
         end
     end

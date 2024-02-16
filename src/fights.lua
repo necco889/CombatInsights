@@ -159,6 +159,8 @@ end
 local function onCombatEvtDbg(eventCode, result, isError, abilityName, abilityGraphic, abilityActionSlotType, sourceName, sourceType, 
     targetName, targetType, hitValue, powerType, damageType, log, sourceUnitId, targetUnitId, abilityId, overflow)
     
+     debugPrint("onCombatEvtDbg %s->%s %d r:%d %d %s", sourceName, targetName, abilityId, result, hitValue, abilityName)
+
     -- debugPrint("evt %d %d %d", eventCode, result, hitValue)
     -- if powerType == POWERTYPE_HEALTH then
     -- end
@@ -166,7 +168,7 @@ end
 
 local function onEffectChangedDbg(eventCode, changeType, effectSlot, effectName, unitTag, beginTime, endTime, stackCount,
      iconName, buffType, effectType, abilityType, statusEffectType, unitName, unitId, abilityId, sourceType)
-    --  debugPrint("onEffectChangedDbg %s %s %d %d", unitTag, unitName, sourceType, unitId)
+     debugPrint("onEffectChangedDbg %s %s %d %d %d", unitTag, unitName, sourceType, unitId, abilityId)
 end
 
 function Fights.Init()
@@ -198,6 +200,7 @@ function Fights.Init()
     EVENT_MANAGER:RegisterForUpdate("CombatInsightsFightsHpLogLoop", 100, hpLogLoop)
     
     -- EVENT_MANAGER:RegisterForEvent("CombatInsightsonEffectChangedDbg", EVENT_EFFECT_CHANGED, onEffectChangedDbg)
+    -- EVENT_MANAGER:RegisterForEvent("CombatInsightsonCombatEvtDbg", EVENT_COMBAT_EVENT, onCombatEvtDbg)
 
 
     for i=1,10 do
@@ -224,7 +227,7 @@ end
 -- needs to be called before LoadSavedFights to purge the saved variables from obsolete data
 function Fights.PurgeSavedFights()
     local cmxSaved = CombatMetricsFightData.GetFights()
-    debugPrint("Purge")
+    -- debugPrint("Purge")
 
     local usage = {}
     local fights = CombatInsightsFightData.SV.fights
