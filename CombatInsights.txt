@@ -1,8 +1,8 @@
 ## Title: CombatInsights
 ## APIVersion: 101039
 ## Description: CombatInsights
-## Version: 1.0.4
-## AddOnVersion: 10004
+## Version: 1.0.5
+## AddOnVersion: 10005
 ## Author: necco889
 ## SavedVariables: CombatInsightsSavedVariables
 ## DependsOn: CombatMetrics>=10515 CombatMetricsFightData>=13 LibAddonMenu-2.0 LibCombat>=54 LibAsync>=20304 CombatInsightsFightData

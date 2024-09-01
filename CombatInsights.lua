@@ -286,7 +286,15 @@ local function initDiffTable()
         createCalcConfigBuff("buffs", "powerfulAssault"),
         createCalcConfigBuff("buffs", "auraOfPride"),
         createCalcConfigBuff("buffs", "weaponDmgEnchant"),
+        createCalcConfigBuff("buffs", "sunderer"),
         createCalcConfigBuff("buffs", "aggressiveHorn"),
+
+        CalculationCfg:New("buffs", "Sluthrug set",
+            LibCombat.GetFormattedAbilityIcon(Consts.buffs.bloodhungry),
+            nil,
+            function(hit) return hit.player.buffs.bloodhungry and hit.target.bloodied end,
+            function(hit) return hit:ChangePlayerBuff("bloodhungry", false):ChangeTargetDebuff("bloodied", false) end,
+            function(hit) return hit:ChangePlayerBuff("bloodhungry", true):ChangeTargetDebuff("bloodied", true) end),
 
 
         CalculationCfg:New("gear", "Changing 1 light piece to medium",

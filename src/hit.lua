@@ -275,7 +275,7 @@ function Hit:ReCalcDmgTaken()
     if target.mk then val = val + 8 end
     --TODO im not sure if this can be done more accurately unless the player is the source
     if target.zen then val = val + (target.zenStacks > 5 and 5 or target.zenStacks) end
-
+    if target.bloodied and self.player.buffs.bloodhungry then val = val + 4 end
 
     if self.damageType == DAMAGE_TYPE_FIRE then
         if target.engulfing then
@@ -1060,6 +1060,7 @@ local playerBuffsCalcFunctions =
         ansulActive = recalcPlayerDamageDoneToMonstersChanged,
         -- arena
         spectralCloak = recalcPlayerDamageDoneChanged,
+        bloodhungry = recalcTargetDmgTakenChanged,
     }
 
 local playerBuffsSpecialFunctions =
@@ -1069,6 +1070,7 @@ local playerBuffsSpecialFunctions =
     powerfulAssault = function(isActive, hit) return hit:ChangeBuffGenericWeaponDmg("powerfulAssault", isActive, 307) end,
     auraOfPride = function(isActive, hit) return hit:ChangeBuffGenericWeaponDmg("auraOfPride", isActive, 260) end,
     weaponDmgEnchant = function(isActive, hit) return hit:ChangeBuffGenericWeaponDmg("weaponDmgEnchant", isActive, 452) end,
+    sunderer = function(isActive, hit) return hit:ChangeBuffGenericWeaponDmg("sunderer", isActive, 100) end,
     aggressiveHorn = function(isActive, hit) return hit:ChangeBuffAggressiveHorn(isActive) end,
     minorForce = function(isActive, hit) return hit:ChangeBuffGenericCritDmg("minorForce", isActive, 10) end,
     majorForce = function(isActive, hit) return hit:ChangeBuffGenericCritDmg("majorForce", isActive, 20) end,
@@ -1124,6 +1126,7 @@ local debuffsCalcFunctions =
     abyssalInk = recalcTargetDmgTakenChanged,
     zen = recalcTargetDmgTakenChanged,
     mk = recalcTargetDmgTakenChanged,
+    bloodied = recalcTargetDmgTakenChanged,
 }
 
 local debuffsSpecialFunctions = 

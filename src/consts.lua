@@ -116,11 +116,12 @@ CombatInsightsConsts =
         sulxan = 154737,
         ansulActive = 194105,
         huntersFocus = 155150,
+        bloodhungry = 214958,
         -- arena
         spectralCloak = 113617,
         mercilessCharge = 99789,
         -- skill line
-        hawkeye = 78855,
+        hawkeye = 78854,
         -- class specific
         sunsphere = 197255,     --dark flare
         sunsphere2 = 109420,    --solar barrage
@@ -128,6 +129,8 @@ CombatInsightsConsts =
         seethingFuryWhip = 122658,  --this gives the 20% to whip
         crux = 184220,
         harnessedQuintessence = 184860, --arcanist wep dmg buff passive
+        sunderer = 215727,  --sundered status effect +100 wep dmg
+        
     },
 
     debuffs =
@@ -161,6 +164,7 @@ CombatInsightsConsts =
         alkosh = 76667,
         crimsonOath = 159288,
         tremorscale = 80866,
+        bloodied = 214954,
 
         -- status effects
         burning = 18084,
