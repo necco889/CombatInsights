@@ -1,8 +1,8 @@
 CombatInsights = {
     name = 'CombatInsights',
     variableVersion = 2,
-    version = "1.0.4",
-    addonVersion = 10004,
+    version = "1.1.0",
+    addonVersion = 10100,
 
     analyses = {},
 
@@ -271,7 +271,7 @@ local function initDiffTable()
         CalculationCfg:New("debuffs", GetAbilityName(Consts.debuffs["offBalance"]),
             LibCombat.GetFormattedAbilityIcon(Consts.debuffs["offBalance"]), nil, function(hit) return hit.target["offBalance"] end,
             nil, nil ),
-
+        createCalcConfigDebuff("debuffs", "magicKnife"),
 
         createCalcConfigBuff("buffs", "minorBerserk"),
         createCalcConfigBuff("buffs", "majorBerserk"),
@@ -288,6 +288,32 @@ local function initDiffTable()
         createCalcConfigBuff("buffs", "weaponDmgEnchant"),
         createCalcConfigBuff("buffs", "sunderer"),
         createCalcConfigBuff("buffs", "aggressiveHorn"),
+        createCalcConfigBuff("buffs", "graveLordsSacrifice"),
+
+        CalculationCfg:New("buffs", "Banner - Fire (dot)", LibCombat.GetFormattedAbilityIcon(Consts.buffs.fieryBanner), nil,
+            function(hit) return hit.player.buffs.fieryBanner end,
+            function(hit) return hit:ChangePlayerBuff("fieryBanner", false) end,
+            function(hit) return hit:ChangePlayerBuff("fieryBanner", true) end),
+
+        CalculationCfg:New("buffs", "Banner - Magic", LibCombat.GetFormattedAbilityIcon(Consts.buffs.magicalBanner), nil,
+            function(hit) return hit.player.buffs.magicalBanner end,
+            function(hit) return hit:ChangePlayerBuff("magicalBanner", false) end,
+            function(hit) return hit:ChangePlayerBuff("magicalBanner", true) end),
+
+        CalculationCfg:New("buffs", "Banner - Multi (aoe)", LibCombat.GetFormattedAbilityIcon(Consts.buffs.shatteringBanner), nil,
+            function(hit) return hit.player.buffs.shatteringBanner end,
+            function(hit) return hit:ChangePlayerBuff("shatteringBanner", false) end,
+            function(hit) return hit:ChangePlayerBuff("shatteringBanner", true) end),
+
+        CalculationCfg:New("buffs", "Banner - Physical (martial)", LibCombat.GetFormattedAbilityIcon(Consts.buffs.sunderingBanner), nil,
+            function(hit) return hit.player.buffs.sunderingBanner end,
+            function(hit) return hit:ChangePlayerBuff("sunderingBanner", false) end,
+            function(hit) return hit:ChangePlayerBuff("sunderingBanner", true) end),
+
+        CalculationCfg:New("buffs", "Banner - Shock (direct)", LibCombat.GetFormattedAbilityIcon(Consts.buffs.shockingBanner), nil,
+            function(hit) return hit.player.buffs.shockingBanner end,
+            function(hit) return hit:ChangePlayerBuff("shockingBanner", false) end,
+            function(hit) return hit:ChangePlayerBuff("shockingBanner", true) end),
 
         CalculationCfg:New("buffs", "Sluthrug set",
             LibCombat.GetFormattedAbilityIcon(Consts.buffs.bloodhungry),

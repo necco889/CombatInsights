@@ -1,8 +1,8 @@
 ## Title: CombatInsights
-## APIVersion: 101039
+## APIVersion: 101044
 ## Description: CombatInsights
-## Version: 1.0.5
-## AddOnVersion: 10005
+## Version: 1.1.0
+## AddOnVersion: 10100
 ## Author: necco889
 ## SavedVariables: CombatInsightsSavedVariables
 ## DependsOn: CombatMetrics>=10515 CombatMetricsFightData>=13 LibAddonMenu-2.0 LibCombat>=54 LibAsync>=20304 CombatInsightsFightData
@@ -26,6 +26,5 @@ src/hit.lua
 src/cmptbl.lua
 src/reportui.lua
 src/analysis.lua
-;src/sandbox.lua
 CombatInsights.xml
 CombatInsights.lua

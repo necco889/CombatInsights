@@ -121,7 +121,8 @@ CombatInsightsConsts =
         spectralCloak = 113617,
         mercilessCharge = 99789,
         -- skill line
-        hawkeye = 78854,
+        hawkeye = 78855,
+        followUp = 60888,
         -- class specific
         sunsphere = 197255,     --dark flare
         sunsphere2 = 109420,    --solar barrage
@@ -130,7 +131,22 @@ CombatInsightsConsts =
         crux = 184220,
         harnessedQuintessence = 184860, --arcanist wep dmg buff passive
         sunderer = 215727,  --sundered status effect +100 wep dmg
+        graveLordsSacrifice = 117757,
+
+        --scribing
+        fieryBanner = 227003,   -- +6% dot
+        magicalBanner = 217705, -- +6% magical
+        shatteringBanner = 227004, -- +6% aoe
+        sunderingBanner = 217704, -- +6% martial
+        shockingBanner = 217706, -- +6% direct
+        bannerCavaliersCharge = 227082, -- +6 wd / 1% bonus move speed (max 450): this is totally messed up, ignore this!
         
+    },
+
+    buffsIgnore = 
+    {
+        [227082] = true, -- bannerCavaliersCharge
+        [227067] = true, -- some random effect of banner
     },
 
     debuffs =
@@ -177,6 +193,9 @@ CombatInsightsConsts =
         -- ablities for areana weapons
         poisonInjection = 44549,
         offBalance = 62988,
+
+        --scribing
+        magicKnife = 217358,
     },
 
     trialDummybuffs = 
@@ -485,6 +504,7 @@ CombatInsightsConsts =
 --[[ --------------------------------------------------------]]
 --[[ ----------------------------mages guild----------------------------]]
 --[[ degeneration --]] [126374] = { magesGuild = true, st = true, dot = true,},
+--[[ structured entropy --]] [126371] = { magesGuild = true, st = true, dot = true,},
 --[[ scalding rune dot --]] [40468] = { magesGuild = true, st = true, dot = true,},
 --[[ scalding rune proc --]] [40469] = { magesGuild = true, aoe = true, direct = true,},
 --[[ shooting star dot --]] [63471] = { magesGuild = true, aoe = true, dot = true,},
@@ -545,6 +565,54 @@ CombatInsightsConsts =
 --[[ one handed light --]] [15435] = { oneHanded = true, st = true, direct = true, basicAttack = true,},
 --[[ one handed medium --]] [15282] = { oneHanded = true, st = true, direct = true, basicAttack = true,},
 --[[ one handed heavy --]] [15829] = { oneHanded = true, st = true, direct = true, basicAttack = true,},
+--[[ ----------------------------scribing-----------------------------]]
+--[[ elemental explosion - fire/frost/magic/shock --]] [217231] = { scribing = true, aoe = true, direct = true,},
+--[[ elemental explosion lingering torment - fire/frost/magic/shock --]] [217241] = { scribing = true, st = true, dot = true,},
+--[[ elemental explosion - phys --]] [229600] = { scribing = true, aoe = true, direct = true,},
+--[[ elemental explosion lingering torment - phys --]] [229602] = { scribing = true, st = true, dot = true,},
+--[[ shield throw - frost/magic --]] [217808] = { scribing = true, st = true, direct = true,},
+--[[ shield throw lingering torment - frost/magic --]] [219818] = { scribing = true, st = true, dot = true,},
+--[[ shield throw - phys --]] [216973] = { scribing = true, st = true, direct = true,},
+--[[ shield throw lingering torment - phys/multi target --]] [217095] = { scribing = true, st = true, dot = true,},
+--[[ shield throw - multi target --]] [217061] = { scribing = true, st = true, direct = true,},
+--[[ shield throw bounce 1- multi target --]] [217071] = { scribing = true, st = true, direct = true,},
+--[[ shield throw bounce 2 - multi target --]] [217072] = { scribing = true, st = true, direct = true,},
+--[[ smash - bleed/phys/poi --]] [217178] = { scribing = true, aoe = true, direct = true,},
+--[[ smash lingering torment - bleed/phys/poi --]] [217188] = { scribing = true, st = true, dot = true,},
+--[[ smash - magic --]] [217179] = { scribing = true, aoe = true, direct = true,},
+--[[ smash lingering torment - magic --]] [219973] = { scribing = true, st = true, dot = true,},
+--[[ travelling knife first hit - bleed/phys/poi --]] [217872] = { scribing = true, st = true, direct = true,},
+--[[ travelling knife return hit - bleed/phys/poi --]] [217359] = { scribing = true, aoe = true, direct = true,},
+--[[ travelling knife lingering torment - bleed/phys/poi/multi target --]] [219720] = { scribing = true, st = true, dot = true,},
+--[[ travelling knife first hit - frost/magic --]] [217473] = { scribing = true, st = true, direct = true,},
+--[[ travelling knife return hit - frost/magic --]] [219705] = { scribing = true, aoe = true, direct = true,},
+--[[ travelling knife lingering torment - frost/magic --]] [219719] = { scribing = true, st = true, dot = true,},
+--[[ travelling knife first hit - multi target --]] [217340] = { scribing = true, st = true, direct = true,},
+--[[ travelling knife aoe hit - multi target --]] [217348] = { scribing = true, aoe = true, direct = true,},
+--[[ vault - bleed/disease/phys/poi --]] [214960] = { scribing = true, aoe = true, direct = true,},
+--[[ vault lingering torment - bleed/disease/phys/poi --]] [214982] = { scribing = true, st = true, dot = true,},
+--[[ vault - fire --]] [214978] = { scribing = true, aoe = true, direct = true,},
+--[[ vault lingering torment - fire --]] [217776] = { scribing = true, st = true, dot = true,},
+--[[ soul burst - bleed/disease/phys --]] [217465] = { scribing = true, aoe = true, direct = true,},
+--[[ soul burst lingering torment - bleed/disease/phys --]] [217461] = { scribing = true, st = true, dot = true,},
+--[[ soul burst - fire/frost/magic/shock --]] [217459] = { scribing = true, aoe = true, direct = true,},
+--[[ soul burst lingering torment --]] [217471] = { scribing = true, st = true, dot = true,},
+--[[ wield soul - bleed/disease/phys --]] [219780] = { scribing = true, st = true, direct = true,},
+--[[ wield soul lingering torment --]] [219781] = { scribing = true, st = true, dot = true,},
+--[[ wield soul - fire/frost/magic/shock --]] [215731] = { scribing = true, st = true, direct = true,},
+--[[ wield soul lingering torment --]] [216833] = { scribing = true, st = true, dot = true,},
+--[[ torchbearer - bleed/phys --]] [217631] = { scribing = true, aoe = true, direct = true,},
+--[[ torchbearer lingering torment - bleed/phys --]] [217638] = { scribing = true, st = true, dot = true,},
+--[[ torchbearer - fire/frost --]] [217632] = { scribing = true, aoe = true, direct = true,},
+--[[ torchbearer lingering torment - fire/frost --]] [219873] = { scribing = true, st = true, dot = true,},
+--[[ ulfsild continegency - bleed --]] [229656] = { scribing = true, aoe = true, direct = true,},
+--[[ ulfsild continegency lingering torment - bleed --]] [229658] = { scribing = true, st = true, dot = true,},
+--[[ ulfsild continegency - flame/frost/magic/shock --]] [217605] = { scribing = true, aoe = true, direct = true,},
+--[[ ulfsild continegency lingering torment - flame/frost/magic/shock --]] [217621] = { scribing = true, st = true, dot = true,},
+--[[ trample - disease/phys --]] [217679] = { scribing = true, aoe = true, direct = true,},
+--[[ trample lingering torment - disease/phys --]] [217688] = { scribing = true, st = true, dot = true,},
+--[[ trample - frost/magic --]] [217682] = { scribing = true, aoe = true, direct = true,},
+--[[ trample lingering torment - frost/magic --]] [220739] = { scribing = true, st = true, dot = true,},
 --[[ ----------------------------proc sets----------------------------]]
 --[[ azureblight: blight seed 1 enemy --]] [126633] = { procSet = true, st = true, direct = true,},
 --[[ stormfist dot --]] [80522] = { procSet = true, aoe = true, dot = true,},
@@ -557,19 +625,20 @@ CombatInsightsConsts =
     },
 
 
-    procsetTable = 
+    procsets = 
     {
---[[ stormfist dot --]] [80522] = {c1 = 0.27763065727263, c2 = -0.36997492502452, },
---[[ stormfist hit --]] [80521] = {c1 = 1.1107800478522, c2 = 8469.58523280853, },
---[[ azureblight --]] [126633] = {c1 = 1.56559580717699, c2 = -0.4418682181504, },
---[[ pillar hit --]] [97716] = {c1 = 0.8034040903, c2 = -1.324455992, },
---[[ pillar dot --]] [97743] = {c1 = 0.4815340671, c2 = 0.4664936727, },
---[[ whorl of depths target dot --]] [172671] = {c1 = 0.24788680165471, c2 = 0.35864070885161, },
+--[[ stormfist dot --]] [80522] = true,
+--[[ stormfist hit --]] [80521] = true,
+--[[ azureblight --]] [126633] = true,
+--[[ pillar hit --]] [97716] = true,
+--[[ pillar dot --]] [97743] = true,
+--[[ whorl of depths target dot --]] [172671] = true,
 
---[[ whorl of depths aoe dot --]] [172672] = {c1 = 0.74413787804699, c2 = -1.16172610437905, },
---[[ relequen (harmful winds) --]] [107203] = {c1 = 0.52257038068187, c2 = -2.83078432352036, },
+--[[ whorl of depths aoe dot --]] [172672] = true,
+--[[ relequen (harmful winds) --]] [107203] = true,
     },
-
+    
+    
     otherProcsetCoefs = 
     {
         ma2h = {c1 = 0.09292055218962, c2 = -0.00775893653678, },

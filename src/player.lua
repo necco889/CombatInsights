@@ -31,6 +31,7 @@ function Player:New()
     o.sets = {}
     o.arenaSets = {}
     o.buffs = {}
+    o.buffCounters = {}
     o.cps = {}
     setmetatable(o, self)
     self.__index = self
@@ -45,7 +46,11 @@ function Player:ReCalcBonuses()
 end
 
 function Player:Copy()
-    return Utils.DeepCopy(self)
+    local tmp = self.buffCounters
+    self.buffCounters = nil -- no need, this is just for a workaround for tracking buffs
+    local newInst = Utils.DeepCopy(self)
+    self.buffCounters = tmp
+    return newInst
 
     -- local o = {}
     -- o.stats = ZO_DeepTableCopy(self.stats)
@@ -314,6 +319,18 @@ function Player:HandleStatChange(logline)
     -- debugPrint("playerstats %d", self.stats.penetration)
 end
 
+-- these buffs have some messed up events, the gain and lose wont line up properly
+-- when there are multiple users, this means its not enough to track the gain/lose events,
+-- we should track a counter as a workaround
+local workarounds =
+{
+    [Consts.buffs.fieryBanner] = true,
+    [Consts.buffs.magicalBanner] = true,
+    [Consts.buffs.shatteringBanner] = true,
+    [Consts.buffs.sunderingBanner] = true,
+    [Consts.buffs.shockingBanner] = true,
+}
+
 function Player:HandleBuffEvent(cmxFight, logline, trialDummy)
     local _, timeMs, unitId, abilityId, changeType, effectType, stacks, sourceType, slot = unpack(logline)
     if unitId ~= cmxFight.playerid then return end
@@ -329,27 +346,47 @@ function Player:HandleBuffEvent(cmxFight, logline, trialDummy)
     --     local text, color = CMX.GetCombatLogString(CombatInsights.analysis.cmxFight, logline, 14)
     --     d(text)
     -- end
+    if abilityName ~= "" and Consts.buffsIgnore[abilityId] == nil then
+        if workarounds[abilityId] then
+            if self.buffCounters[abilityId] == nil then self.buffCounters[abilityId] = 0 end
 
-    if abilityId == Consts.buffs.seethingFuryWhip then
-        buffs.seethingFuryWhip = isGain(changeType)
-        buffs.seethingFuryWhipStacks = buffs.seethingFuryWhip and stacks or 0
-    elseif abilityId == Consts.buffs.hawkeye then
-        buffs.hawkeye = isGain(changeType)
-        buffs.hawkeyeStacks = buffs.hawkeye and stacks or 0
-    elseif abilityId == Consts.buffs.huntersFocus then
-        buffs.huntersFocus = isGain(changeType)
-        buffs.huntersFocusStacks = buffs.huntersFocus and stacks or 0
-    elseif abilityId == Consts.buffs.crux then
-        buffs.crux = isGain(changeType)
-        buffs.cruxStacks = buffs.crux and stacks or 0
-    else
-        for k,v in pairs(Consts.buffs) do
-            if abilityName == GetAbilityName(v) then
-                buffs[k] = isGain(changeType)
+            if isGain(changeType) then
+                self.buffCounters[abilityId] = self.buffCounters[abilityId] + 1
+            else
+                self.buffCounters[abilityId] = self.buffCounters[abilityId] - 1
+            end
+
+            if self.buffCounters[abilityId] > 0 then
+                changeType = EFFECT_RESULT_GAINED
+            else
+                changeType = EFFECT_RESULT_FADED
+            end
+
+            for k,v in pairs(Consts.buffs) do
+                if abilityId == v then
+                    buffs[k] = isGain(changeType)
+                end
+            end
+        elseif abilityId == Consts.buffs.seethingFuryWhip then
+            buffs.seethingFuryWhip = isGain(changeType)
+            buffs.seethingFuryWhipStacks = buffs.seethingFuryWhip and stacks or 0
+        elseif abilityId == Consts.buffs.hawkeye then
+            buffs.hawkeye = isGain(changeType)
+            buffs.hawkeyeStacks = buffs.hawkeye and stacks or 0
+        elseif abilityId == Consts.buffs.huntersFocus then
+            buffs.huntersFocus = isGain(changeType)
+            buffs.huntersFocusStacks = buffs.huntersFocus and stacks or 0
+        elseif abilityId == Consts.buffs.crux then
+            buffs.crux = isGain(changeType)
+            buffs.cruxStacks = buffs.crux and stacks or 0
+        else
+            for k,v in pairs(Consts.buffs) do
+                if abilityName == GetAbilityName(v) then
+                    buffs[k] = isGain(changeType)
+                end
             end
         end
     end
-
     if trialDummy then
         for _,v in pairs(Consts.trialDummybuffs) do
             buffs[v] = true

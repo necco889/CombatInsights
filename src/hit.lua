@@ -125,6 +125,7 @@ function Hit:ReCalcDmgDone()
     local target = self.target
     local player = self.player
     local val = 0
+    local isMartialDmgType = self.damageType == DAMAGE_TYPE_PHYSICAL or self.damageType == DAMAGE_TYPE_BLEED or self.damageType == DAMAGE_TYPE_POISON or self.damageType == DAMAGE_TYPE_DISEASE
     self.dmgDoneValueKnown = true
     if player.buffs.minorBerserk   then val = val + 5  end
     if player.buffs.majorBerserk   then val = val + 10 end
@@ -158,8 +159,23 @@ function Hit:ReCalcDmgDone()
         end
         
         if data.bow and self.player.buffs.hawkeye then
-            val = val + self.player.buffs.hawkeyeStacks * 5
+            val = val + (self.player.buffs.hawkeyeStacks or 0) * 5
         end
+
+        if data.twoHanded and self.player.buffs.followUp then
+            val = val + 10
+        end
+        
+        if data.direct and player.buffs.mercilessCharge then
+            val = val + math.min(self.effectiveWeaponDmg * 12 / 6666, 12)
+        end
+
+        if player.buffs.fieryBanner and data.dot then val = val + 6 end
+        if player.buffs.magicalBanner and not isMartialDmgType then val = val + 6 end
+        if player.buffs.shatteringBanner and data.aoe then val = val + 6 end
+        if player.buffs.sunderingBanner and isMartialDmgType then val = val + 6 end
+        if player.buffs.shockingBanner and data.direct then val = val + 6 end
+
     else
         self.analysis:AddWarningUnknownAbility(self.abilityId)
         self.dmgDoneValueKnown = false
@@ -182,11 +198,17 @@ function Hit:ReCalcDmgDone()
             val = val + 5
         end
     elseif self.player.classId == Consts.CLASS_ID_NECRO then
-        --rapid rot +10% dot
         if data then
             if data.th then
+                --rapid rot +10% dot
                 val = val + 10
             end
+            
+            if player.buffs.graveLordsSacrifice and (data.th or data.necro) then
+                --15% for dot or class ability
+                val = val + 15
+            end
+
             -- TODO stalking blastbones bonus based on time spent chasing...
             -- this is usually 10% so i just go with that for now
             if self.abilityId == 117757 then
@@ -245,6 +267,10 @@ function Hit:ReCalcDmgDone()
             --elemental ring shock plus 5% per enemy hit max 6 target
             local c = self:GetEnemyHitCount(100, 300, 100)
             val = val + (c < 6 and c or 6) * 5
+    end
+
+    if target.magicKnife and isMartialDmgType then
+        val = val + 8
     end
 
     self.dmgDone = val
@@ -464,6 +490,11 @@ function Hit:ReCalcWeaponDamage()
             self.effectiveWeaponDmg = self.effectiveWeaponDmg + 330 * self.weaponDmgBonusModifier
         end
     end
+
+    if player.buffs.bannerCavaliersCharge then
+        self.analysis:AddWarningOther("Banner with Cavalier's Charge is active, this may cause inaccurate results")
+    end
+
 end
 
 
@@ -520,8 +551,9 @@ local function recalcWeaponDamageChanged(oldHit, newHit)
             newHit.analysis:AddWarningUnknownAbility(newHit.abilityId)
             newHit.error = true
         else
-            local procSetData = Consts.procsetTable[newHit.abilityId]
+            local procSetData = Consts.procsets[newHit.abilityId]
             if not procSetData then
+                -- effective pool scaling abilities
                 local effectivePoolOld = oldHit.maxPool + 10.5 * oldHit.effectiveWeaponDmg
                 local effectivePoolNew = newHit.maxPool + 10.5 * newHit.effectiveWeaponDmg
                 -- debugPrint("wepdmgch %d->%d %d->%d",
@@ -530,8 +562,9 @@ local function recalcWeaponDamageChanged(oldHit, newHit)
                 -- )
                 newHit.value = math.floor(oldHit.value * (effectivePoolNew / effectivePoolOld))
             else
-                local oldValue = procSetData.c1 * oldHit.effectiveWeaponDmg + procSetData.c2
-                local newValue = procSetData.c1 * newHit.effectiveWeaponDmg + procSetData.c2
+                -- pure weapon dmg scaling abilities ( proc sets )
+                local oldValue = oldHit.effectiveWeaponDmg
+                local newValue = newHit.effectiveWeaponDmg
                 -- debugPrint("Procset change wdmg: %d -> %d tooltip: %d -> %d", 
                 --     oldHit.effectiveWeaponDmg,
                 --     newHit.effectiveWeaponDmg,
@@ -801,9 +834,9 @@ end
 function Hit:ChangeDebuffStagger(newStacks)
     local oldStacks = self.target.staggerStacks or 0
     -- debugPrint("ChangeDebuffStagger %d %d %d", oldValue, newValue, newStacks)
-    if (self.target.staggerStacks or 0) ~= newStacks then
+    if oldStacks ~= newStacks then
         --no dmg done modifier here!
-        local oldValue = self.target.staggerStacks and self.target.staggerStacks * 65 * self.dmgTakenModifier * self.armorModifier or 0
+        local oldValue = oldStacks * 65 * self.dmgTakenModifier * self.armorModifier
         local newValue = newStacks * 65 * self.dmgTakenModifier * self.armorModifier
         if self.isCrit then
             oldValue = oldValue * self.critDmgModifier
@@ -972,50 +1005,7 @@ function Hit:ChangeSetArenaWeapon(setname, isActive)
 end
 
 function Hit:ChangeMercilessCharge(isActive)
-    local hasSet = self.player.arenaSets["ma2h"]
-    local o = self:Copy()
-    -- debugPrint("%s %s %s", setname, tostring(hasSet), tostring(change))
-    local value = nil
-    if o.dmgDoneValueKnown then
-        local data = Consts.abilityTable[self.abilityId]
-        -- this will be available since dmgDoneValueKnown but just to make sure
-        if data then
-            if data.direct then
-                local c = Consts.otherProcsetCoefs.ma2h
-                value = (o.effectiveWeaponDmg * c.c1 + c.c2)
-                if value > 560 then
-                    value = 560
-                end
-                -- really not sure about this, what if the class ability has a dmgDone bonus? is this dmg also affected by that?
-                value = value * o.dmgDoneModifier * o.dmgDoneToMonstersModifier * o.dmgTakenModifier * o.armorModifier
-                if o.isCrit then
-                    value = value * o.critDmgModifier
-                end
-            end
-        end
-    elseif not o.error then
-        o.analysis:AddWarningDamageDone(o.abilityId)
-        o.error = true
-    end
-
-    if value then
-        if isActive then
-            if not hasSet or not o.player.buffs.mercilessCharge then
-                o.player.buffs.mercilessCharge = true
-                o.player.arenaSets["ma2h"] = true
-                o.value = o.value + value
-                -- debugPrint("ma2h %d + ", value)
-            end
-        else
-            if hasSet and o.player.buffs.mercilessCharge then
-                o.player.buffs.mercilessCharge = false
-                o.player.arenaSets["ma2h"] = false
-                o.value = o.value - value
-                -- debugPrint("ma2h %d - ", value)
-            end
-        end
-    end
-    return o
+    return self:ChangeBuff("mercilessCharge", isActive, recalcPlayerDamageDoneChanged)
 end
 
 function Hit:ChangeSetKilt(isActive)
@@ -1047,6 +1037,7 @@ local playerBuffsCalcFunctions =
         majorBerserk = recalcPlayerDamageDoneChanged,
         minorSlayer = recalcPlayerDamageDoneChanged,
         majorSlayer = recalcPlayerDamageDoneChanged,
+        graveLordsSacrifice = recalcPlayerDamageDoneChanged,
         -- crit dmg
         -- minorForce = recalcCritDmgChanged,
         -- majorForce = recalcCritDmgChanged,
@@ -1061,6 +1052,11 @@ local playerBuffsCalcFunctions =
         -- arena
         spectralCloak = recalcPlayerDamageDoneChanged,
         bloodhungry = recalcTargetDmgTakenChanged,
+        fieryBanner = recalcPlayerDamageDoneChanged,
+        magicalBanner = recalcPlayerDamageDoneChanged,
+        shatteringBanner = recalcPlayerDamageDoneChanged,
+        sunderingBanner = recalcPlayerDamageDoneChanged,
+        shockingBanner = recalcPlayerDamageDoneChanged,
     }
 
 local playerBuffsSpecialFunctions =
@@ -1127,6 +1123,7 @@ local debuffsCalcFunctions =
     zen = recalcTargetDmgTakenChanged,
     mk = recalcTargetDmgTakenChanged,
     bloodied = recalcTargetDmgTakenChanged,
+    magicKnife = recalcPlayerDamageDoneChanged, --yes this is not a 'damage taken' like the tooltip says
 }
 
 local debuffsSpecialFunctions = 
