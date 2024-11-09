@@ -501,10 +501,10 @@ end
 function Hit:ReCalcModifiers()
     self:ReCalcPen()
     self:ReCalcCritDmg()
+    self:ReCalcWeaponDamage()
     self:ReCalcDmgDone()
     self:ReCalcDmgToMonsters()
     self:ReCalcDmgTaken()
-    self:ReCalcWeaponDamage()
 end
 
 local function recalcPenchanged(oldHit, newHit)
