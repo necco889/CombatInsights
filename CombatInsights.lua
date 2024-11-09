@@ -1,8 +1,8 @@
 CombatInsights = {
     name = 'CombatInsights',
     variableVersion = 2,
-    version = "1.1.0",
-    addonVersion = 10100,
+    version = "1.1.1",
+    addonVersion = 10101,
 
     analyses = {},
 

@@ -1,7 +1,7 @@
 CombatInsightsFightData = {
     name = 'CombatInsightsFightData',
     variableVersion = 1,
-	addonVersion = 100,
+	addonVersion = 10101,
 	defaults = {
 		fights = {}
 	}

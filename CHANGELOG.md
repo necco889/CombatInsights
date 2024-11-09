@@ -1,4 +1,9 @@
 # CombatInsights
+1.1.1
+    - Reupload due to bad zip file structure: parent folder was missing so the addon's files were placed directly under AddOns/ and not to its intended folder
+      Please run cleanup.bat or manually remove the following files if you updated the addon via Minion: AddOns/CombatInsightsFightData AddOns/CombatInsights.lua AddOns/CombatInsights.xml AddOns/CombatInsights.txt AddOns/LICENSE AddOns/CHANGELOG.md
+    - API bump for CombatInsightsFightData
+    - Fixed resizeToFitDescendents warnings
 1.1.0
     - Changes for Update 44
     - Fixed issues around ability id changes

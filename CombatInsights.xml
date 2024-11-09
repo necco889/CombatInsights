@@ -58,7 +58,7 @@
             </OnInitialized>
         </Button>
 
-        <Control name="CombatInsightsReportRowTemplate" virtual="true" resizeToFitDescendents="true" >
+        <Control name="CombatInsightsReportRowTemplate" virtual="true" resizeToFitConstrains="Y" >
             <Controls>    
                 <Texture name="$(parent)Icon">
                     <Anchor point="LEFT" relativePoint="LEFT" offsetX="2"/>
@@ -190,7 +190,7 @@
                             </Controls>
                         </Backdrop>
 
-                        <Backdrop name="$(parent)TableHeadRow" centerColor="FF000000" edgeColor="FF000000" resizeToFitDescendents="true">
+                        <Backdrop name="$(parent)TableHeadRow" centerColor="FF000000" edgeColor="FF000000" resizeToFitConstrains="X">
                             <Dimensions y="50" />
                             <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="$(parent)TopRow" offsetX="1"/>
                             <Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT" relativeTo="$(parent)TopRow" offsetX="-1"/>
