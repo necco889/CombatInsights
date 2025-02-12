@@ -1,4 +1,6 @@
 # CombatInsights
+1.1.3
+    - Fixed compatibility with CMX 1.6.x
 1.1.2
     - Fixed crash caused by Maelstrom 2H
 1.1.1

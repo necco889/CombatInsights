@@ -239,21 +239,15 @@ function Fights.PurgeSavedFights()
     for i=1,#cmxSaved do
         local s = cmxSaved[i]
         local startDate = s.date
-        local endDate = startDate + math.floor((s.combatend - s.combatstart) / 1000)
         -- logger:Debug("cmx saved %s - %s", os.date("%Y/%m/%d %H:%M:%S", startDate), os.date("%Y/%m/%d %H:%M:%S", endDate))
-        -- just to add a bit of a tolerance
-        startDate = startDate - 10
-        endDate = endDate + 10
-        -- logger:Debug("cmx saved* %s - %s", os.date("%Y/%m/%d %H:%M:%S", startDate), os.date("%Y/%m/%d %H:%M:%S", endDate))
         for k,f in pairs(fights) do
             -- logger:Debug("fight saved %s - %s", os.date("%Y/%m/%d %H:%M:%S", f.startDate), os.date("%Y/%m/%d %H:%M:%S", f.endDate))
-            if f.startDate and f.endDate then
-                if (f.startDate >= startDate and f.startDate <= endDate) or
-                   (f.endDate >= startDate and f.endDate <= endDate) then
+            if f.startDate then
+                if ((f.startDate - 10) <= startDate and (f.startDate + 10) >= startDate) then
                     usage[k] = usage[k] + 1
-                --     logger:Debug("fight %s is in date range usage %d", tostring(k), usage[k])
+                    -- logger:Debug("fight %s is in date range usage %d", tostring(k), usage[k])
                 -- else
-                --     logger:Debug("fight %s not in date range", tostring(k))
+                    -- logger:Debug("fight %s not in date range", tostring(k))
                 end
             end
         end

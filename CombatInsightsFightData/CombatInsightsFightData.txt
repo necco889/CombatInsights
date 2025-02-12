@@ -1,5 +1,5 @@
 ﻿## Title: CombatInsightsFightData
-## APIVersion: 101044
+## APIVersion: 101045
 ## Description: CombatInsightsFightData
 ## Version: 1.1.1
 ## AddOnVersion: 10101
