@@ -285,6 +285,7 @@ function Fights.HandleCombatState(state)
         else
             f.endDate = GetTimeStamp()   --seconds
             f.endTimeMs = GetGameTimeMilliseconds()
+            f:CollectSkillData()
             Fights.inCombat = false
              --sometimes we get a damage event right at the start of the combat so i do it this was, out of combat current alreadly holds a new entry
             Fights.PrepareNextFight()
@@ -340,6 +341,7 @@ end
 
 function Fight:New()
     local o = {}
+    o.dataVersion = CombatInsightsConsts.FIGHT_DATA_VERSION
     o.bossInfo = {}
     o.bossfight = false
     o.bossname = ""
@@ -357,6 +359,7 @@ function Fight:New()
     o.endDate = 0
     o.startTimeMs = 0
     o.endTimeMs = 0
+    o.playerPassives = {}
     setmetatable(o, self)
     self.__index = self
     return o
@@ -365,6 +368,7 @@ end
 function Fight:ToSV()
     self:PostProcess()
     local o = {}
+    o.dataVersion = self.dataVersion
     o.bossInfo = Utils.DeepCopy(self.bossInfo)
     o.bossfight = self.bossfight
     o.bossname = self.bossname
@@ -393,6 +397,7 @@ function Fight:ToSV()
     o.endDate = self.endDate
     o.startTimeMs = self.startTimeMs
     o.endTimeMs = self.endTimeMs
+    o.playerPassives = Utils.DeepCopy(self.playerPassives)
     return o
 end
 
@@ -419,7 +424,10 @@ function Fight:FromSV(saved)
     -- end
 
 
-
+    
+    if saved.dataVersion then
+        o.dataVersion = saved.dataVersion
+    end
     o.bossInfo = Utils.DeepCopy(saved.bossInfo)
     o.bossfight = saved.bossfight
     o.bossname = saved.bossname
@@ -448,6 +456,9 @@ function Fight:FromSV(saved)
     o.endDate = saved.endDate
     o.startTimeMs = saved.startTimeMs
     o.endTimeMs = saved.endTimeMs
+    if saved.playerPassives then    --new field, handle backward compatibility
+        o.playerPassives = Utils.DeepCopy(saved.playerPassives)
+    end
     setmetatable(o, self)
     self.__index = self
     return o
@@ -546,6 +557,25 @@ end
 
 function Fight:SaveToSavedVariables()
     CombatInsightsFightData.SV.fights[self.startDate] = self
+end
+
+function Fight:CollectSkillData()
+    --save the relevant passive skill's levels
+    for _,v in pairs(CombatInsightsConsts.interestingSkillLineIds) do
+        local skillType, skillLineIndex = GetSkillLineIndicesFromSkillLineId(v)
+        for i=1,GetNumSkillAbilities(skillType, skillLineIndex) do
+            local id = GetSkillAbilityId(skillType, skillLineIndex, i)
+            local _, _, _, passive = GetSkillAbilityInfo(skillType, skillLineIndex, i)
+            local rank = GetSkillAbilityUpgradeInfo(skillType, skillLineIndex, i)
+            if passive then
+                local key = CombatInsightsConsts.interestingPassives[id]
+                if key and rank and rank > 0 then
+                    -- df("%s %d %d %d %d %d", key, v, skillType, skillLineIndex, i, rank)
+                    self.playerPassives[key] = rank
+                end
+            end
+        end
+    end
 end
 
 function DamageTracker:New(unitId)

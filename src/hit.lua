@@ -124,6 +124,7 @@ end
 function Hit:ReCalcDmgDone()
     local target = self.target
     local player = self.player
+    local passives = self.player.playerPassives or {}
     local val = 0
     local isMartialDmgType = self.damageType == DAMAGE_TYPE_PHYSICAL or self.damageType == DAMAGE_TYPE_BLEED or self.damageType == DAMAGE_TYPE_POISON or self.damageType == DAMAGE_TYPE_DISEASE
     self.dmgDoneValueKnown = true
@@ -145,29 +146,75 @@ function Hit:ReCalcDmgDone()
             val = val + 15
         end
 
-        if self.player.infernoStaff[self.player.stats.activeBar] then
+        if player.infernoStaff[player.stats.activeBar] and passives.ancientKnowledge then
             -- +12% dot and status effects
             if data.dot or data.statusEffect then
-                val = val + 12
+                val = val + passives.ancientKnowledge * 6
             end
 
-        elseif self.player.lightningStaff[self.player.stats.activeBar] then
+        elseif player.lightningStaff[player.stats.activeBar] and passives.ancientKnowledge then
             -- +12% direct and channeled
             if data.direct or data.channel then
-                val = val + 12
+                val = val + passives.ancientKnowledge * 6
             end
         end
         
-        if data.bow and self.player.buffs.hawkeye then
-            val = val + (self.player.buffs.hawkeyeStacks or 0) * 5
+        if data.bow and player.buffs.hawkeye and passives.hawkeye then
+            val = val + (player.buffs.hawkeyeStacks or 0) * (passives.hawkeye == 1 and 2 or 5)
         end
 
-        if data.twoHanded and self.player.buffs.followUp then
-            val = val + 10
+        if data.twoHanded and player.buffs.followUp and passives.followUp then
+            val = val + passives.followUp * 5
         end
         
         if data.direct and player.buffs.mercilessCharge then
-            val = val + math.min(self.effectiveWeaponDmg * 12 / 6666, 12)
+            val = val + math.max(math.min(self.effectiveWeaponDmg * 12 / 6666, 12), 8)
+        end
+
+        if passives.rapidRot and data.dot then
+            val = val + passives.rapidRot * 5
+        end
+
+        if passives.psychicLesion and data.statusEffect then
+            val = val + (passives.psychicLesion == 1 and 7 or 15)
+        end
+
+        if target.warmth and passives.warmth and data.dot then
+            val = val + passives.warmth * 3
+        end
+
+        if passives.slaughter and data.dualWield then
+            --Slaughter, 10/20% dmg done with dual wield abilities to targets under 25%
+            if not self.enemyHpPercent then
+                self.enemyHpKnown, self.enemyHpPercent =  self.analysis:GetEnemyHpPercent(self.timeMs, self.target.unitId)
+            end
+            if not self.enemyHpKnown then
+                self.analysis:AddWarningUnknownEnemyHp(self.target.unitId)
+                self.dmgDoneValueKnown = false
+            elseif self.enemyHpPercent <= 0.25 then
+                val = val + (passives.hawkeye == 1 and 2 or 5)
+            end
+        end
+
+        if passives.vinedusk and player.bow[player.stats.activeBar] then
+            --Vinedusk Training, 2/5% dmg done to enemies 15m or closer
+            -- we will just assume it applies, dont know the distance
+            val = val + (passives.vinedusk == 1 and 2 or 5)
+        end
+
+        if passives.skilledTracker and data.fightersGuild then
+            val = val + 10
+        end
+
+        if player.buffs.graveLordsSacrifice and (data.dot or data.necro) then
+            --15% for dot or class ability FIXME level?
+            val = val + 15
+        end
+
+        if (player.buffs.sunsphere or player.buffs.sunsphere2) and
+          (data.templar or data.necro or data.dk or data.sorcerer or data.arcanist or data.nightblade or data.warden) then
+            -- +5% with class abilities
+            val = val + 5
         end
 
         if player.buffs.fieryBanner and data.dot then val = val + 6 end
@@ -183,53 +230,18 @@ function Hit:ReCalcDmgDone()
 
     if target.offBalance and player.cps.exp then val = val + 10 end
 
-    if self.player.classId == Consts.CLASS_ID_DK then
-        if self.abilityId == 18084 or self.abilityId == 21929 then
-            --combustion passive for burning and poisoned status effects
-            val = val + 33
-        elseif self.abilityId == 20805 then
-            -- molten whip stacks
-            val = val + (player.buffs.seethingFuryWhipStacks and player.buffs.seethingFuryWhipStacks * 20 or 0)
-        --venomous claw every tick does +12% dmg but this a unique bonus not effected by anything
-        end
+    if passives.worldInRuin and (self.damageType == DAMAGE_TYPE_FIRE or self.abilityId == DAMAGE_TYPE_POISON) then
+        -- World in Ruin  2/5% dmg done with flame and poison
+         val = val + (passives.worldInRuin == 1 and 2 or 5)
+    end
 
-        --world in ruin passive
-        if self.damageType == DAMAGE_TYPE_FIRE or self.abilityId == DAMAGE_TYPE_POISON then
-            val = val + 5
-        end
-    elseif self.player.classId == Consts.CLASS_ID_NECRO then
-        if data then
-            if data.th then
-                --rapid rot +10% dot
-                val = val + 10
-            end
-            
-            if player.buffs.graveLordsSacrifice and (data.th or data.necro) then
-                --15% for dot or class ability
-                val = val + 15
-            end
-
-            -- TODO stalking blastbones bonus based on time spent chasing...
-            -- this is usually 10% so i just go with that for now
-            if self.abilityId == 117757 then
-                val = val + 10
-            end
-            -- boneyard is 30% more if a corpse is consumed which cant be checked
-            -- so ill just assume it is always the case
-            if self.abilityId == 117854 or self.abilityId == 117809 then
-                val = val + 30
-            end
-        end
-        if self.player.stats.hasNecroSiphonSlotted[self.player.stats.activeBar] then
-            val = val + 3
-        end
+    if passives.energized and (self.damageType == DAMAGE_TYPE_PHYSICAL or self.abilityId == DAMAGE_TYPE_SHOCK) then
+        -- Energized 3/5% physical/shock dmg done
+        val = val + (passives.energized == 1 and 3 or 5)
+    end
     
-    elseif self.player.classId == Consts.CLASS_ID_SORC then
-        --energized passive
-        if self.damageType == DAMAGE_TYPE_PHYSICAL or self.abilityId == DAMAGE_TYPE_SHOCK then
-            val = val + 5
-        end
-        --amplitude passive
+
+    if passives.amplitude then
         if not self.enemyHpPercent then
             self.enemyHpKnown, self.enemyHpPercent =  self.analysis:GetEnemyHpPercent(self.timeMs, self.target.unitId)
         end
@@ -237,19 +249,30 @@ function Hit:ReCalcDmgDone()
             self.analysis:AddWarningUnknownEnemyHp(self.target.unitId)
             self.dmgDoneValueKnown = false
         else
-            -- +1% for every 10% hp the target have
-            val = val + math.floor(self.enemyHpPercent * 10)
-        end
-        --twilight tormentor  deals +50 on enemies over 50% but this is unique modifier
-        --TODO hurricane deals 6% more every tick which stacks with dmgDone
-    elseif self.player.classId == Consts.CLASS_ID_TEMPLAR then
-        if player.buffs.sunsphere or player.buffs.sunsphere2 then
-            -- +5% with class abilities
-            if data and data.templar then
-                val = val + 5
-            end
+            -- Amplitude 1% dmg done for every 20/10% current hp the target has
+            val = val + math.floor(self.enemyHpPercent / (passives.amplitude == 1 and 0.2 or 0.1))
         end
     end
+
+    --twilight tormentor  deals +50 on enemies over 50% but this is unique modifier
+    --TODO hurricane deals 6% more every tick which stacks with dmgDone
+
+    if player.stats.hasNecroSiphonSlotted[player.stats.activeBar] then
+        val = val + 3
+    end
+
+    if (self.abilityId == 18084 or self.abilityId == 21929) then
+        --Combustion, 16/33% dmg done with burning and poison status effect
+        if passives.combustion then val = val + (passives.combustion == 1 and 16 or 33) end
+    elseif self.abilityId == 20805 then
+        -- molten whip stacks
+        val = val + (player.buffs.seethingFuryWhipStacks and player.buffs.seethingFuryWhipStacks * 20 or 0)
+    elseif self.abilityId == 117854 or self.abilityId == 117809 then
+        -- boneyard is 30% more if a corpse is consumed which cant be checked
+        -- so ill just assume it is always the case
+        val = val + 30
+    end
+
 
     if self.abilityId == 62912 or self.abilityId == 39054 or self.abilityId == 39056 then
         --blockade and wall dot/explosion 10% bonus to burning enemies
@@ -313,14 +336,14 @@ function Hit:ReCalcDmgTaken()
     end
 
 
-    if self.player.classId == Consts.CLASS_ID_SORC then
-        if self.target.daedricPrey and Consts.sorcPetAbilities[self.abilityId] then
-            val = val + 45
-        end
-    elseif self.player.classId == Consts.CLASS_ID_NB then
-        if self.target.incap or self.target.soulharvest then
-            val = val + 20
-        end
+    if self.target.daedricPrey and Consts.sorcPetAbilities[self.abilityId] then
+        --FIXME need to know which are the daedric summons...
+        --Changelog: Daedric Prey: This ability now increases the damage your Daedric Summoning pets deal to the target by 50%, instead of increasing the damage all of your pets deal to the target by 45%.
+        --Dev Comment: With subclassing here, we've had to adjust this ability to prevent it from becoming egregiously overpowered when paired with the maximum use case of pets. We've gone forward with a model that largely retains the power where it already lies, where it buffs Sorcerer's pets - and we've gone through and updated any item sets that summon a Daedric entity to be considered a Daedric Summon (Maw of the Infernal, Defiler, and Shadowrend) so they continue to work with this ability. This does mean that other summon based sets will no longer work with this effect, such as Morkuldin.
+        val = val + 50
+    end
+    if self.target.incap or self.target.soulharvest then
+        val = val + 20
     end
     self.dmgTaken = val
     self.dmgTakenModifier = val / 100 + 1
@@ -415,6 +438,7 @@ end
 function Hit:ReCalcWeaponDamage()
     local player = self.player
     local target = self.target
+    local passives = self.player.playerPassives or {}
 
     self.maxPool = math.max(player.stats.maxMagicka, player.stats.maxStamina)
     self.weaponDmgBonus = player.stats.mediumArmorBonus + player.stats.fgbonus[player.stats.activeBar]
@@ -424,18 +448,11 @@ function Hit:ReCalcWeaponDamage()
     if player.buffs.minorBrutality then self.weaponDmgBonus = self.weaponDmgBonus + 10 end
     if player.buffs.majorBrutality then self.weaponDmgBonus = self.weaponDmgBonus + 20 end
     
-    if player.classId == Consts.CLASS_ID_TEMPLAR then
-        self.weaponDmgBonus = self.weaponDmgBonus + 6
-        self.spellDmgBonus = self.spellDmgBonus + 6
-    elseif player.classId == Consts.CLASS_ID_ARCANIST then
-        if player.buffs.harnessedQuintessence then
-            self.spellDmgBonus = self.spellDmgBonus + 5
-            self.weaponDmgBonus = self.weaponDmgBonus + 5
-        end
-    elseif player.classId == Consts.CLASS_ID_SORC then
-        self.spellDmgBonus = self.spellDmgBonus + player.stats.expertMage[player.stats.activeBar]
-        self.weaponDmgBonus = self.weaponDmgBonus + player.stats.expertMage[player.stats.activeBar]
+    if passives.balancedWarrior then
+        self.weaponDmgBonus = self.weaponDmgBonus + passives.balancedWarrior * 3
+        self.spellDmgBonus = self.spellDmgBonus + passives.balancedWarrior * 3
     end
+    -- arca harnessedQuintessence and sorc export mage was changed to flat amount in U46
 
     --apparentWeaponDmg is just the value reported by the game (higher of weapon / sp)
     if player.stats.spellDmg > player.stats.weaponDmg then

@@ -1,4 +1,9 @@
 # CombatInsights
+1.2.0
+    - Changes for U46
+    - Support for subclassing system
+    - Skill rank of passives are now taken into account
+    - Bugfixes
 1.1.3
     - Fixed compatibility with CMX 1.6.x
 1.1.2

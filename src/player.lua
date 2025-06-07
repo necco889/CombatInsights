@@ -28,6 +28,8 @@ function Player:New()
     o.numHeavyArmor = 0
     o.infernoStaff = {false,false}
     o.lightningStaff = {false,false}
+    o.dualWield = {false,false}
+    o.bow = {false,false}
     o.sets = {}
     o.arenaSets = {}
     o.buffs = {}
@@ -201,6 +203,16 @@ function Player:ParseItems(itemlist)
     self.infernoStaff[2] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_BACKUP_MAIN]) == WEAPONTYPE_FIRE_STAFF
     self.lightningStaff[1] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_MAIN_HAND]) == WEAPONTYPE_LIGHTNING_STAFF
     self.lightningStaff[2] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_BACKUP_MAIN]) == WEAPONTYPE_LIGHTNING_STAFF
+
+    local wt1 = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_MAIN_HAND])
+    local wt2 = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_OFF_HAND])
+    self.dualWield[1] = (wt1 == WEAPONTYPE_AXE or wt1 == WEAPONTYPE_DAGGER or wt1 == WEAPONTYPE_HAMMER) and (wt2 == WEAPONTYPE_AXE or wt2 == WEAPONTYPE_DAGGER or wt2 == WEAPONTYPE_HAMMER)
+    wt1 = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_BACKUP_MAIN])
+    wt2 = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_BACKUP_OFF])
+    self.dualWield[2] = (wt1 == WEAPONTYPE_AXE or wt1 == WEAPONTYPE_DAGGER or wt1 == WEAPONTYPE_HAMMER) and (wt2 == WEAPONTYPE_AXE or wt2 == WEAPONTYPE_DAGGER or wt2 == WEAPONTYPE_HAMMER)
+
+    self.bow[1] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_MAIN_HAND]) == WEAPONTYPE_BOW
+    self.bow[2] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_BACKUP_MAIN]) == WEAPONTYPE_BOW
  
     for k,v in pairs(Consts.sets) do
         local b1p = 0

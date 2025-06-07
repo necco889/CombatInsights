@@ -14,6 +14,8 @@ end
 --FIXME remove diffTableCfg
 function Analysis:New(fightDataImport, calculationConfigs)
     local o = {}
+    setmetatable(o, self)
+    self.__index = self
     
     o.cmxFightDataImport = fightDataImport
     o.cmxFight = fightDataImport[1]
@@ -53,6 +55,14 @@ function Analysis:New(fightDataImport, calculationConfigs)
             o.player:ParseItems(o.cmxFight.charData.equip)
             o.player:InitCps(o.cmxFight.CP)
             o.player:InitBars(o.cmxFight.charData.skillBars, o.cmxLog)
+            if o.additionalFightDatas and o.additionalFightDatas[1] then
+                if o.additionalFightDatas[1].dataVersion ~= CombatInsightsConsts.FIGHT_DATA_VERSION then
+                    o:AddWarningOther("Additional fight version mismatch")
+                end
+                o.player.playerPassives = o.additionalFightDatas[1].playerPassives
+            else
+                o:AddWarningOther("Additional fight data missing")
+            end
 
             -- o.loopdata = {}
             -- o.loopdata.startIndex = 1
@@ -70,9 +80,6 @@ function Analysis:New(fightDataImport, calculationConfigs)
     else
         o.error = "Fight data missing from fight"
     end
-
-    setmetatable(o, self)
-    self.__index = self
     return o
 end
 

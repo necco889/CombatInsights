@@ -13,6 +13,8 @@ CombatInsightsConsts =
     CLASS_ID_NECRO    = 5,      -- index 6
     CLASS_ID_ARCANIST = 117,    -- index 7
 
+    FIGHT_DATA_VERSION = 4600,  --update 46
+
     itemSlotsBody =
     {
         EQUIP_SLOT_CHEST, EQUIP_SLOT_FEET, EQUIP_SLOT_HAND, EQUIP_SLOT_HEAD,
@@ -191,6 +193,7 @@ CombatInsightsConsts =
         poisoned = 21929,
         sundered = 178123,
         -- ablities for areana weapons
+        warmth = 160949,
         poisonInjection = 44549,
         offBalance = 62988,
 
@@ -297,8 +300,8 @@ CombatInsightsConsts =
 --[[ escalating runeblades hit 1 --]] [182980] = { arcanist = true, heraldOfTheTome = true, st = true, direct = true,},
 --[[ escalating runeblades hit 2 --]] [182978] = { arcanist = true, heraldOfTheTome = true, st = true, direct = true,},
 --[[ escalating runeblades hit 3 (aoe) --]] [182979] = { arcanist = true, heraldOfTheTome = true, aoe = true, direct = true,},
---[[ exhausting fatecarver --]] [183123] = { arcanist = true, heraldOfTheTome = true, aoe = true, dot = true,},
---[[ pragmatic fatecarver --]] [186370] = { arcanist = true, heraldOfTheTome = true, aoe = true, dot = true,},
+--[[ exhausting fatecarver --]] [183123] = { arcanist = true, heraldOfTheTome = true, aoe = true, direct = true,},
+--[[ pragmatic fatecarver --]] [186370] = { arcanist = true, heraldOfTheTome = true, aoe = true, direct = true,},
 --[[ cephaliarch's flail --]] [183006] = { arcanist = true, heraldOfTheTome = true, aoe = true, direct = true,},
 --[[ tentacular dread --]] [185823] = { arcanist = true, heraldOfTheTome = true, aoe = true, direct = true, special = true,},
 --[[ recuperative treatise --]] [183048] = { arcanist = true, heraldOfTheTome = true, st = true, direct = true,},
@@ -371,8 +374,8 @@ CombatInsightsConsts =
 --[[ purifying light proc  --]] [27544] = { templar = true, dawnsWrath = true, st = true, direct = true,},
 --[[ power of the light hit --]] [89828] = { templar = true, dawnsWrath = true, st = true, direct = true,},
 --[[ power of the light proc --]] [27567] = { templar = true, dawnsWrath = true,},
---[[ radiant glory over 50% --]] [63956] = { templar = true, dawnsWrath = true, st = true, dot = true,},
---[[ radiant oppression over 50% --]] [63961] = { templar = true, dawnsWrath = true, st = true, dot = true,},
+--[[ radiant glory over 50% --]] [63956] = { templar = true, dawnsWrath = true, st = true, direct = true,},
+--[[ radiant oppression over 50% --]] [63961] = { templar = true, dawnsWrath = true, st = true, direct = true,},
 --[[ passive: burning light --]] [80170] = { templar = true, aedricSpear = true, st = true, direct = true,},
 --[[ ----------------------------nightblade----------------------------]]
 --[[ incapacitating strike --]] [113105] = { nightblade = true, assasination = true, st = true, direct = true,},
@@ -698,6 +701,123 @@ CombatInsightsConsts =
 
 
 
+    },
+
+    -- /script local s = "" for i=1,GetNumSkillLines(SKILL_TYPE_CLASS) do local name,_,_,id = GetSkillLineInfo(SKILL_TYPE_CLASS, i); s = s.. string.format("%d --%s\n", id, name) end d(s)
+    skillLineIds = {
+        --SKILL_TYPE_CLASS
+        arcanist = {
+            herald = 218, --Herald of the Tome
+            soldier = 219, --Soldier of Apocrypha
+            curative = 220, --Curative Runeforms
+        },
+        templar = {
+            aedric = 22, --Aedric Spear
+            dawns = 27, --Dawn's Wrath
+            restoring = 28, --Restoring Light
+        },
+        dk = {
+            ardent = 35, --Ardent Flame
+            draconic = 36, --Draconic Power
+            earthen = 37, --Earthen Heart
+        },
+        nb = {
+            assasination = 38, --Assassination
+            shadow = 39, --Shadow
+            siphon = 40, --Siphoning
+        },
+        sorc = {
+            dark = 41, --Dark Magic
+            daedric = 42, --Daedric Summoning
+            storm = 43, --Storm Calling
+        },
+        warden = {
+            animal = 127, --Animal Companions
+            green = 128, --Green Balance
+            winter = 129, --Winter's Embrace
+        },
+        necro = {
+            graveLord = 131, --Grave Lord
+            bone = 132, --Bone Tyrant
+            living = 133, --Living Death
+        },
+        --SKILL_TYPE_GUILD
+        fightersGuild = 45,
+        magesGuild = 44,
+        psijicGuild = 130,
+        undaunted = 55,
+
+        --SKILL_TYPE_ARMOR
+        -- 24 --Light Armor
+        -- 25 --Medium Armor
+        -- 26 --Heavy Armor
+
+        --SKILL_TYPE_WEAPON
+        twoHanded = 30, --Two Handed
+        -- 29 --One Hand and Shield
+        dualWield = 31, --Dual Wield
+        bow = 32, --Bow
+        destroStaff = 33, --Destruction Staff
+        -- 34 --Restoration Staff
+
+        --SKILL_TYPE_WORLD
+        -- 157 --Excavation
+        -- 111 --Legerdemain
+        -- 155 --Scrying
+        -- 72 --Soul Magic
+        -- 51 --Vampire
+        -- 50 --Werewolf
+
+        --SKILL_TYPE_RACIAL
+        -- 64 --Dark Elf Skills
+        -- 52 --Orc Skills
+        -- 56 --High Elf Skills
+        -- 57 --Wood Elf Skills
+        -- 58 --Khajiit Skills
+        -- 59 --Imperial Skills
+        -- 60 --Breton Skills
+        -- 62 --Redguard Skills
+        -- 63 --Argonian Skills
+        -- 65 --Nord Skills
+    },
+
+    -- passives which provide any dps boost we care about
+    -- abilityid -> key for the skill in the player data which will map to the skill's level
+    -- /script local s = "" local st, sli = GetSkillLineIndicesFromSkillLineId(218); for i=1,GetNumSkillAbilities(st, sli) do local name = GetSkillAbilityInfo(st, sli, i); local id = GetSkillAbilityId(st, sli, i);  s = s.. string.format("%d --%s\n", id, name) end d(s)
+    interestingPassives = {
+        --arcanist
+        [184873] = "psychicLesion",     --Psychic Lesion, 7/15% dmg done with status effects
+        --templar
+        [31565] = "balancedWarrior",    --Balanced Warrior, 3/6% weapon and spell damage
+        --dk
+        [29424] = "combustion",         --Combustion, 16/33% dmg done with burning and poison status effect
+        [29430] = "wramth",             --Warmth, 3/6% more dot dmg for 3s after dealing direct dmg with ardent flame ability TODO
+        [29451] = "worldInRuin",        --World in Ruin  2/5% dmg done with flame and poison
+        --nb
+        --sorc
+        [31421] = "energized",          --Energized 3/5% physical/shock dmg done
+        [31422] = "amplitude",          --Amplitude 1% dmg done for every 20/10% current hp the target has
+
+        --warden
+        --necro
+        [116199] = "rapidRot",          --Rapid Rot 5/10% dmg done with dots
+
+        -- two handed
+        [29389] = "followUp",           --Follow Up 5/10% with two handed attacks if the buff is active (after heavy attack for 4s)
+
+        --dual wield
+        [45476] = "slaughter", --Slaughter, 10/20% dmg done with dual wield abilities to targets under 25%
+        [45481] = "ruffian", --Ruffian, 15% dmg done to stunned, immobilized, silenced enemies while dual wielding
+        --bow
+        [45494] = "vinedusk", --Vinedusk Training, 2/5% dmg done to enemies 15m or closer
+        [45497] = "hawkeye", --Hawk Eye, 2/5% to bow abilities stacking up 5 times (while the buff is active)
+        --destro
+        [45513] = "ancientKnowledge", --Ancient Knowledge 6/12% to dot. status with infero; direct, channeled with lightning staff
+
+        --fightersGuild
+        [45596] = "slayer", --Slayer, 3 level, 1/2/3% weapond and spell dmg for each fighters guild ability
+        [40393] = "skilledTracker", --Skilled Tracker, 1 level, 10% dmg done with fighters guild abilities
+
     }
 
 }
@@ -705,54 +825,6 @@ CombatInsightsConsts =
 
 
 function CombatInsightsConsts.Init()
-
-    local skillLinesIndexes = 
-    {
-        -- /script d(GetSkillLineNameById(GetSkillLineId(SKILL_TYPE_CLASS, 9)))
-        arcanist =
-        {
-            herald = 1,
-            soldier = 2,
-            curative = 3,
-        },
-        templar =
-        {
-            aedric = 4,
-            dawn = 5,
-            restoring = 6,
-        },
-        dk =
-        {
-            ardent = 7,
-            draconic = 8,
-            earthen = 9,
-        },
-        nb =
-        {
-            assasin = 10,
-            shadow = 11,
-            siphoning = 12,
-        },
-        sorc =
-        {
-            darkmagic = 13,
-            daedric = 14,
-            storm = 15,
-        },
-        warden =
-        {
-            animal = 16,
-            green = 17,
-            winter = 18,
-        },
-        necro =
-        {
-            graveLord = 19,
-            bone = 20,
-            living = 21,
-        },
-        fightersGuild = 2,
-    }
     local morphIndices =
     {
         MORPH_SLOT_BASE,
@@ -781,14 +853,15 @@ function CombatInsightsConsts.Init()
 -- Returns: string name, textureName texture, number earnedRank, boolean passive, boolean ultimate, boolean purchased, number:nilable progressionIndex, number rank
 
 
-
+    --these lookup tables are used to determine wether an ability is part of a skill line or not (for passives which require abilities to be slotted)
 
     CombatInsightsConsts.fightersGuildAbilities = {}
-    for i=1,GetNumSkillAbilities(SKILL_TYPE_GUILD, skillLinesIndexes.fightersGuild) do
-        local _, _, _, passive = GetSkillAbilityInfo(SKILL_TYPE_GUILD, skillLinesIndexes.fightersGuild, i)
+    local skillType, skillLineIndex = GetSkillLineIndicesFromSkillLineId(CombatInsightsConsts.skillLineIds.fightersGuild)
+    for i=1,GetNumSkillAbilities(skillType, skillLineIndex) do
+        local _, _, _, passive = GetSkillAbilityInfo(skillType, skillLineIndex, i)
         if not passive then
             for _,m in ipairs(morphIndices) do
-                local abilityId = GetSpecificSkillAbilityInfo(SKILL_TYPE_GUILD, skillLinesIndexes.fightersGuild, i, m, 1)
+                local abilityId = GetSpecificSkillAbilityInfo(skillType, skillLineIndex, i, m, 1)
                 CombatInsightsConsts.fightersGuildAbilities[abilityId] = true
             end
         end
@@ -796,41 +869,54 @@ function CombatInsightsConsts.Init()
 
 
     CombatInsightsConsts.nbSiphoningAbilities = {}
-    for i=1,GetNumSkillAbilities(SKILL_TYPE_CLASS, skillLinesIndexes.nb.siphoning) do
-        local _, _, _, passive = GetSkillAbilityInfo(SKILL_TYPE_CLASS, skillLinesIndexes.nb.siphoning, i)
+    skillType, skillLineIndex = GetSkillLineIndicesFromSkillLineId(CombatInsightsConsts.skillLineIds.nb.siphoning)
+    for i=1,GetNumSkillAbilities(skillType, skillLineIndex) do
+        local _, _, _, passive = GetSkillAbilityInfo(skillType, skillLineIndex, i)
         if not passive then
             for _,m in ipairs(morphIndices) do
-                local abilityId = GetSpecificSkillAbilityInfo(SKILL_TYPE_CLASS, skillLinesIndexes.nb.siphoning, i, m, 1)
+                local abilityId = GetSpecificSkillAbilityInfo(skillType, skillLineIndex, i, m, 1)
                 CombatInsightsConsts.nbSiphoningAbilities[abilityId] = true
             end
         end
     end
 
     CombatInsightsConsts.necroSiphon = {}
+    skillType, skillLineIndex = GetSkillLineIndicesFromSkillLineId(CombatInsightsConsts.skillLineIds.necro.graveLord)
     for _,m in ipairs(morphIndices) do
-        local abilityId = GetSpecificSkillAbilityInfo(SKILL_TYPE_CLASS, skillLinesIndexes.necro.graveLord, 6, m, 1)
+        local abilityId = GetSpecificSkillAbilityInfo(skillType, skillLineIndex, 6, m, 1)
         CombatInsightsConsts.necroSiphon[abilityId] = true
     end
-    
-    for _,d in pairs(CombatInsightsConsts.sets) do
-        d.icon = GetItemLinkIcon(d.iln)
-    end
-
 
     CombatInsightsConsts.sorcSkills = {}
-    for _,v in pairs(skillLinesIndexes.sorc) do
-        for i=1,GetNumSkillAbilities(SKILL_TYPE_CLASS, v) do
-            local _, _, _, passive = GetSkillAbilityInfo(SKILL_TYPE_CLASS, v, i)
+    for _,v in pairs(CombatInsightsConsts.skillLineIds.sorc) do
+        skillType, skillLineIndex = GetSkillLineIndicesFromSkillLineId(v)
+        for i=1,GetNumSkillAbilities(skillType, skillLineIndex) do
+            local _, _, _, passive = GetSkillAbilityInfo(skillType, skillLineIndex, i)
             if not passive then
                 for _,m in ipairs(morphIndices) do
-                    local abilityId = GetSpecificSkillAbilityInfo(SKILL_TYPE_CLASS, v, i, m, 1)
+                    local abilityId = GetSpecificSkillAbilityInfo(skillType, skillLineIndex, i, m, 1)
                     CombatInsightsConsts.sorcSkills[abilityId] = true
                 end
             end
         end
     end
 
+    --grab the icons for the sets
+    for _,d in pairs(CombatInsightsConsts.sets) do
+        d.icon = GetItemLinkIcon(d.iln)
+    end
 
+    --flatten the interesting skill line ids
+    CombatInsightsConsts.interestingSkillLineIds = {}
+    for _,v in pairs(CombatInsightsConsts.skillLineIds) do
+        if type(v) == "table" then
+            for _,v2 in pairs(v) do
+                table.insert(CombatInsightsConsts.interestingSkillLineIds, v2)
+            end
+        else
+            table.insert(CombatInsightsConsts.interestingSkillLineIds, v)
+        end
+    end
 end
 
 
