@@ -59,7 +59,7 @@ function Analysis:New(fightDataImport, calculationConfigs)
                 if o.additionalFightDatas[1].dataVersion ~= CombatInsightsConsts.FIGHT_DATA_VERSION then
                     o:AddWarningOther("Additional fight version mismatch")
                 end
-                o.player.playerPassives = o.additionalFightDatas[1].playerPassives
+                o.player.passives = o.additionalFightDatas[1].playerPassives
             else
                 o:AddWarningOther("Additional fight data missing")
             end

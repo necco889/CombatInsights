@@ -11,27 +11,36 @@ end
 
 function Player:New()
     local o = {}
+
+    o.gear = {
+        bloodThristyValue = 0,
+        numMediumArmor = 0,
+        numLightArmor = 0,
+        numHeavyArmor = 0,
+        mediumArmorBonus = 0,
+        undauntedMettle = 0,
+        infernoStaff = {false,false},
+        lightningStaff = {false,false},
+        dualWield = {false,false},
+        bow = {false,false},
+        sets = {},
+        arenaSets = {},
+    }
+
+    o.bars = {
+        fgbonus = {0,0},
+        hasNecroSiphonSlotted = {},
+    }
+
     o.stats = {
         penetration = 0,
         spellDmg = 0,
         weaponDmg = 0,
         critDmg = 50,
         activeBar = 1,
-        bloodThristyValue = 0,
-        mediumArmorBonus = 0,
-        fgbonus = {0,0},
-        expertMage = {0,0},
-        hasNecroSiphonSlotted = {},
     }
-    o.numMediumArmor = 0
-    o.numLightArmor = 0
-    o.numHeavyArmor = 0
-    o.infernoStaff = {false,false}
-    o.lightningStaff = {false,false}
-    o.dualWield = {false,false}
-    o.bow = {false,false}
-    o.sets = {}
-    o.arenaSets = {}
+    
+    o.passives = {}
     o.buffs = {}
     o.buffCounters = {}
     o.cps = {}
@@ -41,18 +50,24 @@ function Player:New()
 end
 
 function Player:ReCalcBonuses()
-    self.stats.mediumArmorBonus = self.numMediumArmor * 2
-    self.stats.undauntedMettle = (self.numMediumArmor > 0 and 2 or 0)
-                                +(self.numLightArmor > 0 and 2 or 0)
-                                +(self.numHeavyArmor > 0 and 2 or 0)
+    self.gear.mediumArmorBonus = self.gear.numMediumArmor * 2
+    self.gear.undauntedMettle = (self.gear.numMediumArmor > 0 and 2 or 0)
+                                +(self.gear.numLightArmor > 0 and 2 or 0)
+                                +(self.gear.numHeavyArmor > 0 and 2 or 0)
 end
 
-function Player:Copy()
-    local tmp = self.buffCounters
-    self.buffCounters = nil -- no need, this is just for a workaround for tracking buffs
-    local newInst = Utils.DeepCopy(self)
-    self.buffCounters = tmp
-    return newInst
+function Player:Copy(fields)
+    if fields == nil then
+        local tmp = self.buffCounters
+        self.buffCounters = nil -- no need, this is just for a workaround for tracking buffs
+        local newInst = Utils.DeepCopy(self)
+        self.buffCounters = tmp
+        return newInst
+    else
+        local o = {}
+    end
+
+    -- return self
 
     -- local o = {}
     -- o.stats = ZO_DeepTableCopy(self.stats)
@@ -187,32 +202,32 @@ end
 
 
 function Player:InitBasics(charData)
-    self.classId = charData.classId
-    self.raceId = charData.raceId
+    -- self.classId = charData.classId
+    -- self.raceId = charData.raceId
 end
 
 function Player:ParseItems(itemlist)
 -- /script local a,b,c = CMX.GetAbilityStats(); d(a[1].charData.equip[1])
 
-    self.stats.bloodThristyValue = getBloodThirstyValue(itemlist)
-    self.numMediumArmor = getNumberOfArmorWeight(itemlist, ARMORTYPE_MEDIUM)
-    self.numLightArmor = getNumberOfArmorWeight(itemlist, ARMORTYPE_LIGHT)
-    self.numHeavyArmor = getNumberOfArmorWeight(itemlist, ARMORTYPE_HEAVY)
+    self.gear.bloodThristyValue = getBloodThirstyValue(itemlist)
+    self.gear.numMediumArmor = getNumberOfArmorWeight(itemlist, ARMORTYPE_MEDIUM)
+    self.gear.numLightArmor = getNumberOfArmorWeight(itemlist, ARMORTYPE_LIGHT)
+    self.gear.numHeavyArmor = getNumberOfArmorWeight(itemlist, ARMORTYPE_HEAVY)
 
-    self.infernoStaff[1] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_MAIN_HAND]) == WEAPONTYPE_FIRE_STAFF
-    self.infernoStaff[2] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_BACKUP_MAIN]) == WEAPONTYPE_FIRE_STAFF
-    self.lightningStaff[1] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_MAIN_HAND]) == WEAPONTYPE_LIGHTNING_STAFF
-    self.lightningStaff[2] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_BACKUP_MAIN]) == WEAPONTYPE_LIGHTNING_STAFF
+    self.gear.infernoStaff[1] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_MAIN_HAND]) == WEAPONTYPE_FIRE_STAFF
+    self.gear.infernoStaff[2] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_BACKUP_MAIN]) == WEAPONTYPE_FIRE_STAFF
+    self.gear.lightningStaff[1] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_MAIN_HAND]) == WEAPONTYPE_LIGHTNING_STAFF
+    self.gear.lightningStaff[2] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_BACKUP_MAIN]) == WEAPONTYPE_LIGHTNING_STAFF
 
     local wt1 = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_MAIN_HAND])
     local wt2 = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_OFF_HAND])
-    self.dualWield[1] = (wt1 == WEAPONTYPE_AXE or wt1 == WEAPONTYPE_DAGGER or wt1 == WEAPONTYPE_HAMMER) and (wt2 == WEAPONTYPE_AXE or wt2 == WEAPONTYPE_DAGGER or wt2 == WEAPONTYPE_HAMMER)
+    self.gear.dualWield[1] = (wt1 == WEAPONTYPE_AXE or wt1 == WEAPONTYPE_DAGGER or wt1 == WEAPONTYPE_HAMMER) and (wt2 == WEAPONTYPE_AXE or wt2 == WEAPONTYPE_DAGGER or wt2 == WEAPONTYPE_HAMMER)
     wt1 = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_BACKUP_MAIN])
     wt2 = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_BACKUP_OFF])
-    self.dualWield[2] = (wt1 == WEAPONTYPE_AXE or wt1 == WEAPONTYPE_DAGGER or wt1 == WEAPONTYPE_HAMMER) and (wt2 == WEAPONTYPE_AXE or wt2 == WEAPONTYPE_DAGGER or wt2 == WEAPONTYPE_HAMMER)
+    self.gear.dualWield[2] = (wt1 == WEAPONTYPE_AXE or wt1 == WEAPONTYPE_DAGGER or wt1 == WEAPONTYPE_HAMMER) and (wt2 == WEAPONTYPE_AXE or wt2 == WEAPONTYPE_DAGGER or wt2 == WEAPONTYPE_HAMMER)
 
-    self.bow[1] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_MAIN_HAND]) == WEAPONTYPE_BOW
-    self.bow[2] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_BACKUP_MAIN]) == WEAPONTYPE_BOW
+    self.gear.bow[1] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_MAIN_HAND]) == WEAPONTYPE_BOW
+    self.gear.bow[2] = GetItemLinkWeaponType(itemlist[EQUIP_SLOT_BACKUP_MAIN]) == WEAPONTYPE_BOW
  
     for k,v in pairs(Consts.sets) do
         local b1p = 0
@@ -224,11 +239,11 @@ function Player:ParseItems(itemlist)
         end
         if v.arena then
             -- we can have the arena weapon on either bar
-            self.arenaSets[k] = (b1 + b1p) >= v.n or (b2 + b2p) >= v.n
+            self.gear.arenaSets[k] = (b1 + b1p) >= v.n or (b2 + b2p) >= v.n
         else
-            self.sets[k] = {}
-            self.sets[k][1] = (b1 + b1p) >= v.n
-            self.sets[k][2] = (b2 + b2p) >= v.n
+            self.gear.sets[k] = {}
+            self.gear.sets[k][1] = (b1 + b1p) >= v.n
+            self.gear.sets[k][2] = (b2 + b2p) >= v.n
         end
     end
 
@@ -237,12 +252,10 @@ end
 
 
 function Player:InitBars(skillBarData, logdata)
-    self.stats.fgbonus[1] = getNumberOfSkillsOnBar(skillBarData, 1, Consts.fightersGuildAbilities) * 3
-    self.stats.fgbonus[2] = getNumberOfSkillsOnBar(skillBarData, 2, Consts.fightersGuildAbilities) * 3
-    self.stats.expertMage[1] = getNumberOfSkillsOnBar(skillBarData, 1, Consts.sorcSkills) * 2
-    self.stats.expertMage[2] = getNumberOfSkillsOnBar(skillBarData, 2, Consts.sorcSkills) * 2
-    self.stats.hasNecroSiphonSlotted[1] = getNumberOfSkillsOnBar(skillBarData, 2, Consts.necroSiphon) > 0
-    self.stats.hasNecroSiphonSlotted[2] = getNumberOfSkillsOnBar(skillBarData, 2, Consts.necroSiphon) > 0
+    self.bars.fgbonus[1] = getNumberOfSkillsOnBar(skillBarData, 1, Consts.fightersGuildAbilities) * 3
+    self.bars.fgbonus[2] = getNumberOfSkillsOnBar(skillBarData, 2, Consts.fightersGuildAbilities) * 3
+    self.bars.hasNecroSiphonSlotted[1] = getNumberOfSkillsOnBar(skillBarData, 2, Consts.necroSiphon) > 0
+    self.bars.hasNecroSiphonSlotted[2] = getNumberOfSkillsOnBar(skillBarData, 2, Consts.necroSiphon) > 0
     
     --find the first weapon swap or ability cast the log and figure out the current bar
     for k, logline in ipairs(logdata) do
@@ -411,7 +424,7 @@ function Player:BarswapTo(bar)
 end
 
 function Player:HasSet(setname, bar)
-    local setdata = self.sets[setname]
+    local setdata = self.gear.sets[setname]
     if not setdata then return false end
     return setdata[bar]
 end
