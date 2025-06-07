@@ -30,8 +30,8 @@ function Hit:New(analysis, index, timeMs, value, isCrit, abilityId, player, targ
     o.value = value
     o.isCrit = isCrit
     o.abilityId = abilityId
-    o.player = player:Copy()
-    o.target = target:Copy()
+    o.player = player
+    o.target = target
     o.damageType = damageType
 
     o.penetration = 0
@@ -49,7 +49,7 @@ function Hit:New(analysis, index, timeMs, value, isCrit, abilityId, player, targ
 end
 
 
-function Hit:Copy()
+function Hit:Copy(copyPlayer, copyTarget)
     -- local other = Utils.DeepCopy(self)
     -- return other
     local o = Hit:New(
@@ -59,8 +59,8 @@ function Hit:Copy()
         self.value,
         self.isCrit,
         self.abilityId,
-        self.player,
-        self.target,
+        copyPlayer and self.player:Copy() or self.player,
+        copyTarget and self.target:Copy() or self.target,
         self.damageType
     )
     o.enemyHpKnown = self.enemyHpKnown
@@ -598,7 +598,7 @@ local function recalcWeaponDamageChanged(oldHit, newHit)
 end
 
 function Hit:ChangeCpFF(isActive)
-    local o = self:Copy()
+    local o = self:Copy(true, false)
     if isActive and not o.player.cps.ff then
         o.player.stats.critDmg = o.player.stats.critDmg + 8
         o.player.cps.ff = true
@@ -610,7 +610,7 @@ function Hit:ChangeCpFF(isActive)
 end
 
 function Hit:ChangeCpBS(isActive)
-    local o = self:Copy()
+    local o = self:Copy(true, false)
     if isActive and not o.player.cps.bs then
         o.player.stats.critDmg = o.player.stats.critDmg + 10
         o.player.cps.bs = true
@@ -622,43 +622,43 @@ function Hit:ChangeCpBS(isActive)
 end
 
 function Hit:ChangeCpEXP(isActive)
-    local o = self:Copy()
+    local o = self:Copy(true, false)
     o.player.cps.exp = isActive or nil
     return recalcPlayerDamageDoneChanged(self, o)
 end
 
 function Hit:ChangeCpDA(isActive)
-    local o = self:Copy()
+    local o = self:Copy(true, false)
     o.player.cps.da = isActive or nil
     return recalcPlayerDamageDoneChanged(self, o)
 end
 
 function Hit:ChangeCpBA(isActive)
-    local o = self:Copy()
+    local o = self:Copy(true, false)
     o.player.cps.ba = isActive or nil
     return recalcPlayerDamageDoneChanged(self, o)
 end
 
 function Hit:ChangeCpTH(isActive)
-    local o = self:Copy()
+    local o = self:Copy(true, false)
     o.player.cps.th = isActive or nil
     return recalcPlayerDamageDoneChanged(self, o)
 end
 
 function Hit:ChangeCpMAA(isActive)
-    local o = self:Copy()
+    local o = self:Copy(true, false)
     o.player.cps.maa = isActive or nil
     return recalcPlayerDamageDoneChanged(self, o)
 end
 
 function Hit:ChangeCpWS(isActive)
-    local o = self:Copy()
+    local o = self:Copy(true, false)
     o.player.cps.ws = isActive or nil
     return recalcWeaponDamageChanged(self, o)
 end
 
 function Hit:ChangeCpUA(isActive)
-    local o = self:Copy()
+    local o = self:Copy(true, false)
     if isActive and not o.player.cps.ua then
         o.player.cps.ua = true
         o.player.stats.weaponDmg = o.player.stats.weaponDmg + 150 * self.weaponDmgBonusModifier
@@ -672,7 +672,7 @@ function Hit:ChangeCpUA(isActive)
 end
 
 function Hit:ChangeCpFON(isActive)
-    local o = self:Copy()
+    local o = self:Copy(true, false)
     o.player.cps.fon = isActive or nil
     return recalcPenchanged(self, o)
 end
@@ -693,7 +693,7 @@ end
 function Hit:ChangeBuff(buffkey, isActive, recalcFunction)
     local buff = self.player.buffs[buffkey]
     if (isActive and not buff) or (not isActive and buff) then
-        local o = self:Copy()
+        local o = self:Copy(true, false)
         o.player.buffs[buffkey] = isActive or nil
         return recalcFunction(self, o)
     end
@@ -734,7 +734,7 @@ function Hit:ChangeBuffGenericWeaponDmg(buffkey, isActive, value)
 
     local buff = self.player.buffs[buffkey]
     if (isActive and not buff) or (not isActive and buff) then
-        local o = self:Copy()
+        local o = self:Copy(true, false)
         o.player.buffs[buffkey] = isActive or nil
         o.player.stats.weaponDmg = o.player.stats.weaponDmg + (isActive and value or -value) * self.weaponDmgBonusModifier
         o.player.stats.spellDmg  = o.player.stats.spellDmg  + (isActive and value or -value) * self.weaponDmgBonusModifier
@@ -748,7 +748,7 @@ function Hit:ChangeBuffGenericCritDmg(buffkey, isActive, value)
 
     local buff = self.player.buffs[buffkey]
     if (isActive and not buff) or (not isActive and buff) then
-        local o = self:Copy()
+        local o = self:Copy(true, false)
         o.player.buffs[buffkey] = isActive or nil
         o.player.stats.critDmg = o.player.stats.critDmg + (isActive and value or -value)
         o.player.stats.critDmg  = o.player.stats.critDmg  + (isActive and value or -value)
@@ -762,7 +762,7 @@ function Hit:ChangeBuffAggressiveHorn(isActive)
     -- return self:ChangeBuffGenericWeaponDmg("aggressiveHorn", isActive, 260)
     if (isActive and not self.player.buffs.aggressiveHorn) or
     (not isActive and self.player.buffs.aggressiveHorn) then
-        local o = self:Copy()
+        local o = self:Copy(true, false)
         o.player.buffs.aggressiveHorn = isActive or nil
         local baseMaxMag = self.player.stats.maxMagicka / ( 1 + ((self.player.stats.undauntedMettle + (self.player.buffs.aggressiveHorn and 10 or 0) / 100) ))
         local baseMaxStam = self.player.stats.maxStamina / ( 1 + ((self.player.stats.undauntedMettle + (self.player.buffs.aggressiveHorn and 10 or 0) / 100) ))
@@ -776,14 +776,14 @@ function Hit:ChangeBuffAggressiveHorn(isActive)
 end
 
 function Hit:ChangeBaseWeaponDamage(value)
-    local o = self:Copy()
+    local o = self:Copy(true, false)
     o.player.stats.weaponDmg = o.player.stats.weaponDmg + value * self.weaponDmgBonusModifier
     o.player.stats.spellDmg  = o.player.stats.spellDmg  + value * self.weaponDmgBonusModifier
     return recalcWeaponDamageChanged(self, o)
 end
 
 function Hit:ChangePenOffset(val)
-    local o = self:Copy()
+    local o = self:Copy(false, false)
     o.penetrationOffset = val
     return recalcPenchanged(self, o)
 end
@@ -791,7 +791,7 @@ end
 function Hit:AddLightArmorPiece()
     --TODO undaunted mettle
     if self.player.numLightArmor < 7 then
-        local o = self:Copy()
+        local o = self:Copy(true, false)
         o.player.numLightArmor = o.player.numLightArmor + 1
         o.player:ReCalcBonuses()
         o.penetrationOffset = (o.penetrationOffset or 0) + 939
@@ -803,7 +803,7 @@ end
 function Hit:RemoveLightArmorPiece()
     --TODO undaunted mettle
     if self.player.numLightArmor > 0 then
-        local o = self:Copy()
+        local o = self:Copy(true, false)
         o.player.numLightArmor = o.player.numLightArmor - 1
         o.player:ReCalcBonuses()
         o.penetrationOffset = (o.penetrationOffset or 0)- 939
@@ -815,7 +815,7 @@ end
 function Hit:AddMediumArmorPiece()
     --TODO undaunted mettle
     if self.player.numMediumArmor < 7 then
-        local o = self:Copy()
+        local o = self:Copy(true, false)
         o.player.numMediumArmor = o.player.numMediumArmor + 1
         o.player.stats.critDmg = o.player.stats.critDmg + 2
         o.player:ReCalcBonuses()
@@ -833,7 +833,7 @@ end
 function Hit:RemoveMediumArmorPiece()
     --TODO undaunted mettle
     if self.player.numMediumArmor > 0 then
-        local o = self:Copy()
+        local o = self:Copy(true, false)
         o.player.numMediumArmor = o.player.numMediumArmor - 1
         o.player.stats.critDmg = o.player.stats.critDmg - 2
         o.player:ReCalcBonuses()
@@ -861,7 +861,7 @@ function Hit:ChangeDebuffStagger(newStacks)
         end
 
         if self.value > oldValue then
-            local o = self:Copy()
+            local o = self:Copy(false, true)
             o.target.staggerStacks = newStacks
             o.value = math.floor(o.value - oldValue + newValue)
             return o
@@ -873,7 +873,7 @@ end
 function Hit:ChangeDebuff(debuffkey, isActive, recalcFunction)
     local debuff = self.target[debuffkey]
     if (isActive and not debuff) or (not isActive and debuff) then
-     local o = self:Copy()
+     local o = self:Copy(false, true)
      o.target[debuffkey] = isActive or nil
      return recalcFunction(self, o)
     end
@@ -903,7 +903,7 @@ function Hit:ChangeSet(setname, bar, isActive)
     -- )
     local change = (isActive and not self.player:HasSet(setname, bar)) or (not isActive and self.player:HasSet(setname, bar))
     if change and self.player.stats.activeBar == bar then
-        local o = self:Copy()
+        local o = self:Copy(true, false)
         o.player.sets[setname][bar] = isActive
         if setname == "deadly" then
             return recalcPlayerDamageDoneChanged(self, o)
@@ -935,11 +935,11 @@ function Hit:ChangeSetVelothi(isActive)
     local wasActive = self.player:HasSet("velothi", 1) or self.player:HasSet("velothi", 2)
     local change = isActive ~= wasActive
     if change then
-        local o = self:Copy()
+        local o = self:Copy(true, false)
         o.player.sets["velothi"][1] = isActive
         o.player.sets["velothi"][2] = isActive
         local o2 = recalcPlayerDamageDoneToMonstersChanged(self, o)
-        o = o2:Copy()
+        o = o2:Copy(false, false)
         o.penetrationOffset = (o.penetrationOffset or 0) + (isActive and 1650 or -1650)
         o = recalcPenchanged(o2, o)
         local data = Consts.abilityTable[self.abilityId]
@@ -967,7 +967,7 @@ end
 
 function Hit:ChangeStaminaPercentForCoral(newPercent, bar)
     if self.player.stats.activeBar == bar and self.player:HasSet("coral", self.player.stats.activeBar) then
-        local o = self:Copy()
+        local o = self:Copy(true, false)
         local known, stamPerc = self.analysis:GetPlayerStaminaPercent(self.timeMs)
         if not known and not o.error then
             o.analysis:AddWarningOther("Cannot calculate coral riptide:\nUnknown player stamina")
@@ -989,7 +989,7 @@ function Hit:ChangeSetArenaWeapon(setname, isActive)
     local change = (isActive and not hasSet) or (not isActive and hasSet)
     -- debugPrint("%s %s %s", setname, tostring(hasSet), tostring(change))
     if change then
-        local o = self:Copy()
+        local o = self:Copy(true, false)
         o.player.arenaSets[setname] = isActive
         if setname == "mastersBow" then
             return recalcWeaponDamageChanged(self, o)
@@ -1028,14 +1028,14 @@ end
 function Hit:ChangeSetKilt(isActive)
     if isActive then
         if self.player.buffs.huntersFocusStacks ~= 10 then
-            local o = self:Copy()
+            local o = self:Copy(true, false)
             o.player.buffs.huntersFocusStacks = 10
             o.player.stats.critDmg = self.player.stats.critDmg - (self.player.buffs.huntersFocusStacks or 0) + 10
             return recalcCritDmgChanged(self, o)
         end
     else
         if self.player.buffs.huntersFocusStacks and self.player.buffs.huntersFocusStacks > 0 then
-            local o = self:Copy()
+            local o = self:Copy(true, false)
             o.player.buffs.huntersFocusStacks = 0
             o.player.stats.critDmg = self.player.stats.critDmg - self.player.buffs.huntersFocusStacks
             return recalcCritDmgChanged(self, o)
@@ -1096,7 +1096,7 @@ function Hit:ChangePlayerBuff(buffkey, isActive)
         local f = playerBuffsCalcFunctions[buffkey]
         if f then
             -- simple calculation, update table then recalc with modifiers
-            local o = self:Copy()
+            local o = self:Copy(true, false)
             o.player.buffs[buffkey] = isActive or nil
             return f(self, o)
         else
@@ -1105,7 +1105,7 @@ function Hit:ChangePlayerBuff(buffkey, isActive)
                 -- a bit more complicated one
                 return f(isActive, self)
             else
-                local o = self:Copy()
+                local o = self:Copy(false, false)
                 local s = string.format("Unhandled buff: \"%s\"", buffkey)
                 o.analysis:AddWarningOther(s)
                 o.error = true
@@ -1154,7 +1154,7 @@ function Hit:ChangeTargetDebuff(debuffkey, isActive)
         local f = debuffsCalcFunctions[debuffkey]
         if f then
             -- simple calculation, update table then recalc with modifiers
-            local o = self:Copy()
+            local o = self:Copy(false, true)
             o.target[debuffkey] = isActive or nil
             return f(self, o)
         else
@@ -1163,7 +1163,7 @@ function Hit:ChangeTargetDebuff(debuffkey, isActive)
                 -- a bit more complicated one
                 return f(isActive, self)
             else
-                local o = self:Copy()
+                local o = self:Copy(false, false)
                 local s = string.format("Unhandled debuff: \"%s\"", debuffkey)
                 o.analysis:AddWarningOther(s)
                 o.error = true

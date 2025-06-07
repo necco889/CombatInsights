@@ -104,7 +104,7 @@ function Analysis:ProcessLogLine(lineIndex)
             --FIXME handle absorbs ?
             local t = self.targets:Get(targetUnitId)
             local isCrit = (result == ACTION_RESULT_CRITICAL_DAMAGE or result == ACTION_RESULT_DOT_TICK_CRITICAL)
-            local hit = Hit:New(self, #self.hits + 1, timeMs, hitValue, isCrit, abilityId, player, t, damageType)
+            local hit = Hit:New(self, #self.hits + 1, timeMs, hitValue, isCrit, abilityId, player:Copy(), t:Copy(), damageType)
     
             table.insert(self.hits, hit)
             local numHits = #self.hits
