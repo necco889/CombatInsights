@@ -38,6 +38,10 @@ function Player:New()
         weaponDmg = 0,
         critDmg = 50,
         activeBar = 1,
+        magicka = 0,
+        stamina = 0,
+        health = 0,
+        ultimate = 0,
     }
     
     o.passives = {}
@@ -65,23 +69,17 @@ function Player:Copy(fields)
         return newInst
     else
         local o = {}
+        o.gear = fields.gear and Utils.DeepCopy(self.gear) or self.gear
+        o.bars = fields.bars and Utils.DeepCopy(self.bars) or self.bars
+        o.stats = fields.stats and ZO_ShallowTableCopy(self.stats) or self.stats
+        o.passives = fields.passives and ZO_ShallowTableCopy(self.passives) or self.passives
+        o.buffs = fields.buffs and ZO_ShallowTableCopy(self.buffs) or self.buffs
+        o.cps = fields.cps and ZO_ShallowTableCopy(self.cps) or self.cps
+
+        setmetatable(o, self)
+        self.__index = self
+        return o
     end
-
-    -- return self
-
-    -- local o = {}
-    -- o.stats = ZO_DeepTableCopy(self.stats)
-    -- o.numMediumArmor = self.numMediumArmor
-    -- o.numLightArmor = self.numLightArmor
-    -- o.numHeavyArmor = self.numHeavyArmor
-    -- o.infernoStaff = ZO_ShallowTableCopy(self.infernoStaff)
-    -- o.lightningStaff = ZO_ShallowTableCopy(self.lightningStaff)
-    -- o.sets = ZO_DeepTableCopy(self.sets)
-    -- o.arenaSets = ZO_DeepTableCopy(self.arenaSets)
-    -- o.buffs = ZO_ShallowTableCopy(self.buffs)
-    -- o.cps = ZO_ShallowTableCopy(self.cps)
-    -- setmetatable(o, getmetatable(self))
-    -- return o
 end
 
 local function getSetName(itemLink)
