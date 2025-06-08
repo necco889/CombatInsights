@@ -1,4 +1,7 @@
 # CombatInsights
+
+### 1.2.2
+  - Updated dependency versions in manifest files
 ### 1.2.1
   - Improved performance
 ### 1.2.0
